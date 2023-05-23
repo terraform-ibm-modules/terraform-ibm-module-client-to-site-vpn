@@ -1,0 +1,3 @@
+[submodule "common-dev-assets"]
+	path = common-dev-assets
+	url = https://github.ibm.com/GoldenEye/common-dev-assets.git
