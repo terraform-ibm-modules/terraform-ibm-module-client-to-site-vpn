@@ -70,39 +70,54 @@ module "secrets_manager_private_certificate" {
 # VPC
 # ---------------------------------------------------------------------------------------------------------------------
 
-module "acl_profile" {
-  source = "git::https://github.ibm.com/GoldenEye/acl-profile-ocp.git?ref=1.1.2"
+# module "acl_profile" {
+#   source = "git::https://github.ibm.com/GoldenEye/acl-profile-ocp.git?ref=1.1.2"
+# }
+
+# locals {
+#   acl_rules_map = {
+#     private = concat(
+#       module.acl_profile.base_acl,
+#       module.acl_profile.https_acl,
+#       module.acl_profile.deny_all_acl
+#     )
+#   }
+# }
+
+# module "vpc" {
+#   source                    = "git::https://github.ibm.com/GoldenEye/vpc-module.git?ref=5.4.0"
+#   unique_name               = var.prefix
+#   ibm_region                = local.sm_region
+#   resource_group_id         = module.resource_group.resource_group_id
+#   use_mgmt_subnet           = true
+#   acl_rules_map             = local.acl_rules_map
+#   virtual_private_endpoints = {}
+#   vpc_tags                  = var.resource_tags
+# }
+
+module "management_vpc" {
+  source                       = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git//landing-zone-submodule/management-vpc?ref=v7.2.0"
+  resource_group_id            = module.resource_group.resource_group_id
+  region                       = var.region
+  prefix                       = var.prefix
+  tags                         = var.resource_tags
+  clean_default_security_group = true
+  clean_default_acl            = true
+  ibmcloud_api_key             = var.ibmcloud_api_key
 }
 
-locals {
-  acl_rules_map = {
-    private = concat(
-      module.acl_profile.base_acl,
-      module.acl_profile.https_acl,
-      module.acl_profile.deny_all_acl
-    )
-  }
-}
-
-module "vpc" {
-  source                    = "git::https://github.ibm.com/GoldenEye/vpc-module.git?ref=5.4.0"
-  unique_name               = var.prefix
-  ibm_region                = local.sm_region
-  resource_group_id         = module.resource_group.resource_group_id
-  use_mgmt_subnet           = true
-  acl_rules_map             = local.acl_rules_map
-  virtual_private_endpoints = {}
-  vpc_tags                  = var.resource_tags
+data "ibm_is_vpc" "management_vpc" {
+  identifier = module.management_vpc.vpc_id
 }
 
 module "vpn" {
-  depends_on        = [module.vpc]
+  # depends_on        = [module.vpc]
   source            = "../.."
   server_cert_crn   = module.secrets_manager_private_certificate.secret_crn
   vpn_gateway_name  = local.vpn_gateway_name
   resource_group_id = module.resource_group.resource_group_id
   # If "module.vpc.subnets["mgmt"]" list has >= 2 values then slice the list to get the first 2 values.
-  subnet_ids                    = length(module.vpc.subnets["mgmt"]) >= 2 ? slice([for k in module.vpc.subnets["mgmt"] : k["id"]], 0, 2) : [for k in module.vpc.subnets["mgmt"] : k["id"]]
+  subnet_ids                    = slice(data.ibm_is_vpc.management_vpc.subnets, 0, 2) #length(module.vpc.subnets["mgmt"]) >= 2 ? slice([for k in module.vpc.subnets["mgmt"] : k["id"]], 0, 2) : [for k in module.vpc.subnets["mgmt"] : k["id"]]
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
   access_group_name             = "${var.prefix}-${var.access_group_name}"
