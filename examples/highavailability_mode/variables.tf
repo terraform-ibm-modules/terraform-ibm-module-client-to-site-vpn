@@ -97,7 +97,7 @@ variable "vpn_server_routes" {
     action      = string
   }))
   description = "Map of server routes to be added to created VPN server."
-  # Disabling VPN Server Route creation as there is a bug while destroying them using Terraform. Issue tracked here: https://github.ibm.com/GoldenEye/issues/issues/4637
+  # Disabling VPN Server Route creation as there is a bug while destroying them using Terraform. Issue tracked here: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4585
   default = {
     #    "vpc-192" = {
     #      destination = "192.168.0.0/22"

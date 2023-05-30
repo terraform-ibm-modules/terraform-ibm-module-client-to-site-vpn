@@ -1,15 +1,14 @@
-# Client to Site VPN Module
+<!-- BEGIN MODULE HOOK -->
 
-<!-- UPDATE BADGES:
-1. Make sure that the badge link for the current status of the module is correct. For the status options, see https://github.ibm.com/GoldenEye/documentation/blob/master/status.md.
-2. Update the "Build Status" badge to point to the travis pipeline for the module. Replace "module-template" in two places.
-3. Update the "latest release" badge to point to the new module. Replace "module-template" in two places.
--->
-[![Stable (Adopted)](https://img.shields.io/badge/Status-Stable%20(Adopted)-yellowgreen?style=plastic)](https://github.ibm.com/GoldenEye/documentation/blob/master/status.md)
-[![CI](https://img.shields.io/badge/CI-Toolchain%20Tekton%20Pipeline-3662FF?logo=ibm)](https://cloud.ibm.com/devops/toolchains/c3916535-165a-4275-9b1f-c58575839951?env_id=ibm:yp:us-south)
-[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
+<!-- Update the title to match the module name and add a description -->
+# Client to Site VPN Module
+<!-- UPDATE BADGE: Update the link for the following badge-->
+[![Stable (With quality checks)](https://img.shields.io/badge/Status-Stable%20(With%20quality%20checks)-green?style=plastic)](https://terraform-ibm-modules.github.io/documentation/#/badge-status)
+[![Build status](https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/actions/workflows/ci.yml/badge.svg)](https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/actions/workflows/ci.yml)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![latest release](https://shields-server.m03l6u0cqkx.eu-de.codeengine.appdomain.cloud/github/v/release/GoldenEye/client-to-site-vpn-module?logo=GitHub)](https://github.ibm.com/GoldenEye/client-to-site-vpn-module/releases/latest)
+[![latest release](https://img.shields.io/github/v/release/terraform-ibm-modules/terraform-ibm-module-template?logo=GitHub&sort=semver)](https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/releases/latest)
+[![Renovate enabled](https://img.shields.io/badge/renovate-enabled-brightgreen.svg)](https://renovatebot.com/)
+[![semantic-release](https://img.shields.io/badge/%20%20%F0%9F%93%A6%F0%9F%9A%80-semantic--release-e10079.svg)](https://github.com/semantic-release/semantic-release)
 
 <!-- Remove the content in this H2 heading after completing the steps -->
 
@@ -61,35 +60,6 @@ module "client-to-site-vpn" {
 }
 ```
 
-<!--
-Include the following 'Controls' section if the module implements NIST controls
-Remove the 'section if the module does not implement controls
--->
-
-<!-- GoldenEye core team only
-## Compliance and security
-
-This module implements the following NIST controls. For more information about how this module implements the controls in the following list, see [NIST controls](docs/controls.md).
-
-| Profile | Category | ID       | Description |
-|---------|----------|----------|-------------|
-| NIST    | SC-7     | SC-7(3)  | Limit the number of external network connections to the information system. |
-
-The 'Profile' and 'ID' columns are used by the IBM Cloud catalog to import
-the controls into the catalog page.
-
-In the example here, remove the SC-7 row and include a row for each control
-that the module implements.
-
-Include the control enhancement in the ID column ('SC-7(3)' in this example).
-
-Identify how the module is complying with the controls. Summarize the
-rationale or implementation in the 'Description' column.
-
-For details about the controls, see the NIST Risk Management Framework page at
-https://csrc.nist.gov/Projects/risk-management/sp800-53-controls/release-search#/controls?version=4.0.
--->
-
 ## Required IAM access policies
 You need the following permissions to run this module.
 
@@ -108,6 +78,7 @@ Manage > Access (IAM) > Access groups > Access policies.
 
 For more information about the access you need to run all the GoldenEye modules, see [GoldenEye IAM permissions](https://github.ibm.com/GoldenEye/documentation/blob/master/goldeneye-iam-permissions.md).
 
+<!-- END MODULE HOOK -->
 <!-- BEGIN EXAMPLES HOOK -->
 ## Examples
 
@@ -165,6 +136,13 @@ No modules.
 | <a name="output_vpn_server_id"></a> [vpn\_server\_id](#output\_vpn\_server\_id) | Client to Site VPN ID |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
+<!-- BEGIN CONTRIBUTING HOOK -->
+
 <!-- Leave this section as is so that your module has a link to local development environment set up steps for contributors to follow -->
-## Developing
-To set up your local development environment, see [Local development setup](https://github.ibm.com/GoldenEye/documentation/blob/master/local-dev-setup.md).
+## Contributing
+
+You can report issues and request features for this module in GitHub issues in the module repo. See [Report an issue or request a feature](https://github.com/terraform-ibm-modules/.github/blob/main/.github/SUPPORT.md).
+
+To set up your local development environment, see [Local development setup](https://terraform-ibm-modules.github.io/documentation/#/local-dev-setup) in the project documentation.
+<!-- Source for this readme file: https://github.com/terraform-ibm-modules/common-dev-assets/tree/main/module-assets/ci/module-template-automation -->
+<!-- END CONTRIBUTING HOOK -->

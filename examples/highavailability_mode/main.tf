@@ -31,19 +31,19 @@ resource "ibm_resource_instance" "secrets_manager" {
   }
 }
 
-# Best practise, use the secrets manager secret group module to create a secret group
-module "secrets_manager_secret_group" {
-  source                   = "git::https://github.ibm.com/GoldenEye/secrets-manager-secret-group-module.git?ref=2.0.1"
-  region                   = local.sm_region
-  secrets_manager_guid     = local.sm_guid
-  secret_group_name        = "${var.prefix}-certificates-secret-group"    #checkov:skip=CKV_SECRET_6: does not require high entropy string as is static value
-  secret_group_description = "secret group used for private certificates" #tfsec:ignore:general-secrets-no-plaintext-exposure
+# # Best practice, use the secrets manager secret group module to create a secret group
+resource "ibm_sm_secret_group" "secret_group" {
+  name        = "${var.prefix}-certificates-secret-group"
+  description = "secret group used for private certificates"
+  region      = local.sm_region
+  instance_id = local.sm_guid
 }
+
 
 module "private_secret_engine" {
   depends_on                = [ibm_resource_instance.secrets_manager]
   count                     = var.existing_sm_instance_guid == null ? 1 : 0
-  source                    = "git::https://github.ibm.com/GoldenEye/secrets-manager-private-cert-engine-module.git?ref=2.1.0"
+  source                    = "git::https://github.com/terraform-ibm-modules/terraform-ibm-secrets-manager-private-cert-engine?ref=v1.0.0"
   secrets_manager_guid      = local.sm_guid
   region                    = local.sm_region
   root_ca_name              = var.root_ca_name
@@ -56,11 +56,11 @@ module "private_secret_engine" {
 
 module "secrets_manager_private_certificate" {
   depends_on             = [module.private_secret_engine]
-  source                 = "git::https://github.ibm.com/GoldenEye/secrets-manager-private-cert-module.git?ref=2.0.0"
+  source                 = "git::https://github.com/terraform-ibm-modules/terraform-ibm-secrets-manager-private-cert.git?ref=init"
   cert_name              = "${var.prefix}-cts-vpn-private-cert"
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name
-  cert_secrets_group_id  = module.secrets_manager_secret_group.secret_group_id
+  cert_secrets_group_id  = ibm_sm_secret_group.secret_group.secret_group_id
   cert_common_name       = "goldeneye.appdomain.cloud"
   secrets_manager_guid   = local.sm_guid
   secrets_manager_region = local.sm_region
@@ -70,32 +70,7 @@ module "secrets_manager_private_certificate" {
 # VPC
 # ---------------------------------------------------------------------------------------------------------------------
 
-# module "acl_profile" {
-#   source = "git::https://github.ibm.com/GoldenEye/acl-profile-ocp.git?ref=1.1.2"
-# }
-
-# locals {
-#   acl_rules_map = {
-#     private = concat(
-#       module.acl_profile.base_acl,
-#       module.acl_profile.https_acl,
-#       module.acl_profile.deny_all_acl
-#     )
-#   }
-# }
-
-# module "vpc" {
-#   source                    = "git::https://github.ibm.com/GoldenEye/vpc-module.git?ref=5.4.0"
-#   unique_name               = var.prefix
-#   ibm_region                = local.sm_region
-#   resource_group_id         = module.resource_group.resource_group_id
-#   use_mgmt_subnet           = true
-#   acl_rules_map             = local.acl_rules_map
-#   virtual_private_endpoints = {}
-#   vpc_tags                  = var.resource_tags
-# }
-
-module "management_vpc" {
+module "landing_zone_management_vpc" {
   source                       = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git//landing-zone-submodule/management-vpc?ref=v7.2.0"
   resource_group_id            = module.resource_group.resource_group_id
   region                       = var.region
@@ -106,8 +81,9 @@ module "management_vpc" {
   ibmcloud_api_key             = var.ibmcloud_api_key
 }
 
-data "ibm_is_vpc" "management_vpc" {
-  identifier = module.management_vpc.vpc_id
+data "ibm_is_vpc" "landing_zone_management_vpc" {
+  depends_on = [module.landing_zone_management_vpc] # Explicite depends to wait for the full subnet creations
+  identifier = module.landing_zone_management_vpc.vpc_id
 }
 
 module "vpn" {
@@ -117,7 +93,7 @@ module "vpn" {
   vpn_gateway_name  = local.vpn_gateway_name
   resource_group_id = module.resource_group.resource_group_id
   # If "module.vpc.subnets["mgmt"]" list has >= 2 values then slice the list to get the first 2 values.
-  subnet_ids                    = slice(data.ibm_is_vpc.management_vpc.subnets, 0, 2) #length(module.vpc.subnets["mgmt"]) >= 2 ? slice([for k in module.vpc.subnets["mgmt"] : k["id"]], 0, 2) : [for k in module.vpc.subnets["mgmt"] : k["id"]]
+  subnet_ids                    = slice([for subnet in data.ibm_is_vpc.landing_zone_management_vpc.subnets : subnet["id"]], 0, 2) #length(module.vpc.subnets["mgmt"]) >= 2 ? slice([for k in module.vpc.subnets["mgmt"] : k["id"]], 0, 2) : [for k in module.vpc.subnets["mgmt"] : k["id"]]
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
   access_group_name             = "${var.prefix}-${var.access_group_name}"
