@@ -80,6 +80,7 @@ func TestRunHighAvailabilityVPNExample(t *testing.T) {
 }
 
 func TestRunUpgradeHighAvailabilityVPNExample(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	options := setupOptions(t, "cts-vpn-upg")

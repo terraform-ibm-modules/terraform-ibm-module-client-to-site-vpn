@@ -82,18 +82,17 @@ module "landing_zone_management_vpc" {
 }
 
 data "ibm_is_vpc" "landing_zone_management_vpc" {
-  depends_on = [module.landing_zone_management_vpc] # Explicite depends to wait for the full subnet creations
+  depends_on = [module.landing_zone_management_vpc] # Explicit "depends_on" here to wait for the full subnet creations
   identifier = module.landing_zone_management_vpc.vpc_id
 }
 
 module "vpn" {
-  # depends_on        = [module.vpc]
   source            = "../.."
   server_cert_crn   = module.secrets_manager_private_certificate.secret_crn
   vpn_gateway_name  = local.vpn_gateway_name
   resource_group_id = module.resource_group.resource_group_id
-  # If "module.vpc.subnets["mgmt"]" list has >= 2 values then slice the list to get the first 2 values.
-  subnet_ids                    = slice([for subnet in data.ibm_is_vpc.landing_zone_management_vpc.subnets : subnet["id"]], 0, 2) #length(module.vpc.subnets["mgmt"]) >= 2 ? slice([for k in module.vpc.subnets["mgmt"] : k["id"]], 0, 2) : [for k in module.vpc.subnets["mgmt"] : k["id"]]
+  # Randomly place the gateway in 2 of the subnets in this basic example
+  subnet_ids                    = slice([for subnet in data.ibm_is_vpc.landing_zone_management_vpc.subnets : subnet["id"]], 0, 2)
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
   access_group_name             = "${var.prefix}-${var.access_group_name}"

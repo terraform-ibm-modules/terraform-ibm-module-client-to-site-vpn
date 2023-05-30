@@ -10,11 +10,11 @@ _extends: repo-settings:.github/common-settings-v2.yml
 # repo-specific settings
 #
 repository:
-  # See https://github.ibm.com/GoldenEye/documentation/blob/master/authoring-guidelines?id=module-names-and-descriptions
+  # See https://terraform-ibm-modules.github.io/documentation/#/implementation-guidelines?id=module-names-and-descriptions
 
   # By changing this field, you rename the repository.
 
-  name: "client-to-site-vpn-module"
+  name: "terraform-module-client-to-site-vpn"
 
   # The description is displayed under the repository name on the
   # organization page and in the 'About' section of the repository.
