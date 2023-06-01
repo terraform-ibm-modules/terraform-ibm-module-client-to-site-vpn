@@ -1,4 +1,4 @@
-module github.com/terraform-ibm-modules/terraform-ibm-client-to-site
+module github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn
 
 go 1.20
 
