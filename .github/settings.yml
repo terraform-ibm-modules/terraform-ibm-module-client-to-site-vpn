@@ -23,3 +23,5 @@ repository:
   # Uncomment this description property
   # and update the description to the current repo description.
   # description: ""
+
+  topics: "core-team"
