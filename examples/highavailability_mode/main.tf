@@ -31,7 +31,7 @@ resource "ibm_resource_instance" "secrets_manager" {
   }
 }
 
-# # Best practice, use the secrets manager secret group module to create a secret group
+# Best practice, use the secrets manager secret group module to create a secret group
 resource "ibm_sm_secret_group" "secret_group" {
   name        = "${var.prefix}-certificates-secret-group"
   description = "secret group used for private certificates"
