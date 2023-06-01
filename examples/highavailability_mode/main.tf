@@ -75,7 +75,7 @@ module "basic_vpc" {
   source               = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git?ref=v7.2.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
-  name                 = "${var.prefix}-basic-vpc"
+  name                 = "vpc"
   prefix               = var.prefix
   tags                 = var.resource_tags
   enable_vpc_flow_logs = false
