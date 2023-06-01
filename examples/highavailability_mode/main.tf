@@ -61,7 +61,7 @@ module "secrets_manager_private_certificate" {
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name
   cert_secrets_group_id  = ibm_sm_secret_group.secret_group.secret_group_id
-  cert_common_name       = "goldeneye.appdomain.cloud"
+  cert_common_name       = "example.com"
   secrets_manager_guid   = local.sm_guid
   secrets_manager_region = local.sm_region
 }

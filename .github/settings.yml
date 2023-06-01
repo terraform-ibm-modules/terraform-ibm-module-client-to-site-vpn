@@ -14,7 +14,7 @@ repository:
 
   # By changing this field, you rename the repository.
 
-  name: "terraform-module-client-to-site-vpn"
+  name: "terraform-ibm-module-client-to-site-vpn"
 
   # The description is displayed under the repository name on the
   # organization page and in the 'About' section of the repository.
