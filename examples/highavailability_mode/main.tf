@@ -70,29 +70,47 @@ module "secrets_manager_private_certificate" {
 # VPC
 # ---------------------------------------------------------------------------------------------------------------------
 
-module "landing_zone_management_vpc" {
-  source                       = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git//landing-zone-submodule/management-vpc?ref=v7.2.0"
-  resource_group_id            = module.resource_group.resource_group_id
-  region                       = var.region
-  prefix                       = var.prefix
-  tags                         = var.resource_tags
-  clean_default_security_group = true
-  clean_default_acl            = true
-  ibmcloud_api_key             = var.ibmcloud_api_key
+# Minimal VPC for illustation purpose: 2 subnets across 2 availability zones
+module "basic_vpc" {
+  source               = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git?ref=v7.2.0"
+  resource_group_id    = module.resource_group.resource_group_id
+  region               = var.region
+  name                 = "${var.prefix}-basic-vpc"
+  prefix               = var.prefix
+  tags                 = var.resource_tags
+  enable_vpc_flow_logs = false
+  subnets = {
+    zone-1 = [
+      {
+        name           = "subnet-a"
+        cidr           = "10.10.10.0/24"
+        public_gateway = true
+        acl_name       = "vpc-acl"
+      }
+    ],
+    zone-2 = [
+      {
+        name           = "subnet-b"
+        cidr           = "10.20.10.0/24"
+        public_gateway = true
+        acl_name       = "vpc-acl"
+      }
+    ],
+    zone-3 = []
+  }
 }
 
-data "ibm_is_vpc" "landing_zone_management_vpc" {
-  depends_on = [module.landing_zone_management_vpc] # Explicit "depends_on" here to wait for the full subnet creations
-  identifier = module.landing_zone_management_vpc.vpc_id
+data "ibm_is_vpc" "basic_vpc" {
+  depends_on = [module.basic_vpc] # Explicit "depends_on" here to wait for the full subnet creations
+  identifier = module.basic_vpc.vpc_id
 }
 
 module "vpn" {
-  source            = "../.."
-  server_cert_crn   = module.secrets_manager_private_certificate.secret_crn
-  vpn_gateway_name  = local.vpn_gateway_name
-  resource_group_id = module.resource_group.resource_group_id
-  # Randomly place the gateway in 2 of the subnets in this basic example
-  subnet_ids                    = slice([for subnet in data.ibm_is_vpc.landing_zone_management_vpc.subnets : subnet["id"]], 0, 2)
+  source                        = "../.."
+  server_cert_crn               = module.secrets_manager_private_certificate.secret_crn
+  vpn_gateway_name              = local.vpn_gateway_name
+  resource_group_id             = module.resource_group.resource_group_id
+  subnet_ids                    = slice([for subnet in data.ibm_is_vpc.basic_vpc.subnets : subnet["id"]], 0, 2)
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
   access_group_name             = "${var.prefix}-${var.access_group_name}"
