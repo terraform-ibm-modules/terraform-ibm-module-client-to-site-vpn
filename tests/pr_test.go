@@ -14,7 +14,6 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Resource groups are maintained https://github.ibm.com/GoldenEye/ge-dev-account-management
 // Allow the tests to create a unique resource group for every test to ensure tests do not clash. This is due to the fact that the auth policy created by this module has to be scoped to the resource group (see https://github.ibm.com/GoldenEye/client-to-site-vpn-module/pull/303#issuecomment-54128819) and hence would clash if tests used same resource group.
 // const resourceGroup = "geretain-test-client-to-site-vpn"
 const highAvailabilityModeExampleTerraformDir = "examples/highavailability_mode"
@@ -80,7 +79,6 @@ func TestRunHighAvailabilityVPNExample(t *testing.T) {
 }
 
 func TestRunUpgradeHighAvailabilityVPNExample(t *testing.T) {
-	t.Skip()
 	t.Parallel()
 
 	options := setupOptions(t, "cts-vpn-upg")
