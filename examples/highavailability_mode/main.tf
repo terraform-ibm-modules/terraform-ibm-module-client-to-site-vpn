@@ -84,7 +84,7 @@ module "basic_vpc" {
       {
         name           = "subnet-a"
         cidr           = "10.10.10.0/24"
-        public_gateway = true
+        public_gateway = false
         acl_name       = "vpc-acl"
       }
     ],
@@ -92,7 +92,7 @@ module "basic_vpc" {
       {
         name           = "subnet-b"
         cidr           = "10.20.10.0/24"
-        public_gateway = true
+        public_gateway = false
         acl_name       = "vpc-acl"
       }
     ],
