@@ -75,7 +75,7 @@ module "secrets_manager_private_certificate" {
 }
 
 ##############################################################################
-# Deploy client-to-site in a dedicated subnets in the management Landing Zone VPC
+# Deploy client-to-site in a dedicated subnet in the management Landing Zone VPC
 ##############################################################################
 
 locals {
@@ -90,12 +90,32 @@ resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes" {
   cidr = var.vpn_subnet_cidr
 }
 
+resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
+  name = "${var.prefix}-client-to-site-acl"
+  vpc  = var.vpc_id != null ? var.vpc_id : local.vpc_id
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+  }
+}
+
 resource "ibm_is_subnet" "client_to_site_subnet" {
   depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes]
   name            = "${var.prefix}-client-to-site-subnet"
   vpc             = var.vpc_id != null ? var.vpc_id : local.vpc_id
   ipv4_cidr_block = var.vpn_subnet_cidr
   zone            = local.zone
+  network_acl     = ibm_is_network_acl.client_to_site_vpn_acl.id
 }
 
 module "vpn" {
