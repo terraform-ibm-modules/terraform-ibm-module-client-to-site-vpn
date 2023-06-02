@@ -83,6 +83,7 @@ For more information about the access you need to run all the GoldenEye modules,
 ## Examples
 
 - [ High-availability mode Client to Site VPN example](examples/highavailability_mode)
+- [ Client-To-Site VPN add-on for landing zone](examples/landing-zone)
 <!-- END EXAMPLES HOOK -->
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
