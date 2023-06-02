@@ -29,6 +29,7 @@ resource "ibm_resource_instance" "secrets_manager" {
   timeouts {
     create = "20m" # Extending provisioning time to 20 minutes
   }
+  provider = ibm.ibm-sm
 }
 
 # # Best practice, use the secrets manager secret group module to create a secret group
@@ -37,6 +38,7 @@ resource "ibm_sm_secret_group" "secret_group" {
   description = "secret group used for private certificates"
   region      = local.sm_region
   instance_id = local.sm_guid
+  provider    = ibm.ibm-sm
 }
 
 
@@ -51,7 +53,9 @@ module "private_secret_engine" {
   certificate_template_name = var.certificate_template_name
   root_ca_max_ttl           = var.root_ca_max_ttl
   root_ca_common_name       = var.root_ca_common_name
-
+  providers = {
+    ibm = ibm.ibm-sm
+  }
 }
 
 module "secrets_manager_private_certificate" {
@@ -64,6 +68,9 @@ module "secrets_manager_private_certificate" {
   cert_common_name       = "example.com"
   secrets_manager_guid   = local.sm_guid
   secrets_manager_region = local.sm_region
+  providers = {
+    ibm = ibm.ibm-sm
+  }
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
