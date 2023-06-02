@@ -79,6 +79,11 @@ module "basic_vpc" {
   prefix               = var.prefix
   tags                 = var.resource_tags
   enable_vpc_flow_logs = false
+  use_public_gateways = {
+    zone-1 = false
+    zone-2 = false
+    zone-3 = false
+  }
   subnets = {
     zone-1 = [
       {
