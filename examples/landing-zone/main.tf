@@ -99,6 +99,10 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
     direction   = "outbound"
+    udp {
+      source_port_min = 443
+      source_port_max = 443
+    }
   }
   rules {
     name        = "inbound"
@@ -106,6 +110,10 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
     direction   = "inbound"
+    udp {
+      port_min = 443
+      port_max = 443
+    }
   }
 }
 
