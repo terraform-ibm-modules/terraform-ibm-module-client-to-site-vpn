@@ -1,12 +1,355 @@
 {
   "path": ".",
-  "variables": {},
-  "outputs": {},
+  "variables": {
+    "access_group_name": {
+      "name": "access_group_name",
+      "type": "string",
+      "description": "Name of the IAM Access Group to create if var.create_policy is true",
+      "default": "client-to-site-vpn-access-group",
+      "required": true,
+      "source": [
+        "ibm_iam_access_group.cts_vpn_access_group.name"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 89
+      }
+    },
+    "client_auth_methods": {
+      "name": "client_auth_methods",
+      "type": "string",
+      "description": "Client authentication method",
+      "default": "username",
+      "pos": {
+        "filename": "variables.tf",
+        "line": 28
+      }
+    },
+    "client_dns_server_ips": {
+      "name": "client_dns_server_ips",
+      "type": "list(string)",
+      "description": "DNS server addresses that will be provided to VPN clients connected to this VPN server",
+      "default": [],
+      "source": [
+        "ibm_is_vpn_server.vpn.client_dns_server_ips"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 22
+      },
+      "elem": {
+        "type": "TypeString"
+      }
+    },
+    "client_idle_timeout": {
+      "name": "client_idle_timeout",
+      "type": "number",
+      "description": "The seconds a VPN client can be idle before this VPN server will disconnect it. Default set to 30m (1800 secs). Specify 0 to prevent the server from disconnecting idle clients.",
+      "default": 1800,
+      "source": [
+        "ibm_is_vpn_server.vpn.client_idle_timeout"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 39
+      },
+      "min_value": "0",
+      "max_value": "28800"
+    },
+    "client_ip_pool": {
+      "name": "client_ip_pool",
+      "type": "string",
+      "description": "Client IP pool for the VPN",
+      "default": "10.0.0.0/20",
+      "required": true,
+      "source": [
+        "ibm_is_vpn_server.vpn.client_ip_pool"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 16
+      },
+      "matches": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(3[0-2]|[1-2][0-9]|[0-9]))$"
+    },
+    "create_policy": {
+      "name": "create_policy",
+      "type": "bool",
+      "description": "Set to true to create a new access group (using the value of var.access_group_name) with a VPN Client role",
+      "default": true,
+      "source": [
+        "ibm_iam_access_group.cts_vpn_access_group.count",
+        "ibm_iam_access_group_members.cts_vpn_access_group_users.count",
+        "ibm_iam_access_group_policy.cts_vpn_access_group_policy.count"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 77
+      }
+    },
+    "create_s2s_auth_policy": {
+      "name": "create_s2s_auth_policy",
+      "type": "bool",
+      "description": "Create IAM Service to Service Authorization to allow communication between all VPN Servers (scoped to the given resource group) and the given Secrets Manager instance. Currently not possible to scope the policy to the exact VPN server ID since the policy is needed before the instance exists as it uses the cert stored in secrets manager during the provisioning process.",
+      "default": true,
+      "source": [
+        "ibm_iam_authorization_policy.policy.count"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 95
+      }
+    },
+    "enable_split_tunneling": {
+      "name": "enable_split_tunneling",
+      "type": "bool",
+      "description": "Enables split tunnel mode for the Client to Site VPN Creation",
+      "default": true,
+      "source": [
+        "ibm_is_vpn_server.vpn.enable_split_tunneling"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 71
+      }
+    },
+    "resource_group_id": {
+      "name": "resource_group_id",
+      "type": "string",
+      "description": "ID of the resource group to use when creating the VPC",
+      "required": true,
+      "source": [
+        "ibm_iam_authorization_policy.policy.source_resource_group_id",
+        "ibm_is_vpn_server.vpn.resource_group"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 5
+      },
+      "cloud_data_type": "resource_group",
+      "immutable": true,
+      "computed": true,
+      "cloud_data_range": [
+        "resolved_to:id"
+      ]
+    },
+    "secrets_manager_id": {
+      "name": "secrets_manager_id",
+      "type": "string",
+      "description": "ID of the Secrets Manager that contains the certificate to use for the VPN, only required when create_s2s_auth_policy is true.",
+      "source": [
+        "ibm_iam_authorization_policy.policy.target_resource_instance_id"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 101
+      },
+      "immutable": true,
+      "computed": true
+    },
+    "server_cert_crn": {
+      "name": "server_cert_crn",
+      "type": "string",
+      "description": "CRN of a secret in Secrets Manager that contains the certificate to use for the VPN",
+      "required": true,
+      "source": [
+        "ibm_is_vpn_server.vpn.certificate_crn"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 62
+      }
+    },
+    "subnet_ids": {
+      "name": "subnet_ids",
+      "type": "list(string)",
+      "description": "List must have at least 1 subnet ID for standalone VPN and at least 2 subnet IDs for the High Availability mode.",
+      "required": true,
+      "pos": {
+        "filename": "variables.tf",
+        "line": 49
+      }
+    },
+    "vpn_client_access_group_users": {
+      "name": "vpn_client_access_group_users",
+      "type": "list(string)",
+      "description": "List of users to optionally add to the Client to Site VPN Access Group if var.create_policy is true",
+      "default": [],
+      "source": [
+        "ibm_iam_access_group_members.cts_vpn_access_group_users.ibm_ids"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 83
+      },
+      "elem": {
+        "type": "TypeString"
+      }
+    },
+    "vpn_gateway_name": {
+      "name": "vpn_gateway_name",
+      "type": "string",
+      "description": "Name of the VPN",
+      "default": "test",
+      "source": [
+        "ibm_is_vpn_server.vpn.name"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 10
+      },
+      "min_length": 1,
+      "max_length": 63,
+      "matches": "^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$"
+    },
+    "vpn_server_routes": {
+      "name": "vpn_server_routes",
+      "type": "map(object({\n    destination = string\n    action      = string\n  }))",
+      "description": "Map of server routes to be added to created VPN server.",
+      "default": {},
+      "source": [
+        "ibm_is_vpn_server_route.server_route.for_each"
+      ],
+      "pos": {
+        "filename": "variables.tf",
+        "line": 107
+      }
+    }
+  },
+  "outputs": {
+    "vpn_server_certificate_secret_crn": {
+      "name": "server_cert_crn",
+      "description": "CRN of a secret in Secrets Manager that contains the certificate to use for the VPN",
+      "value": "var.server_cert_crn",
+      "pos": {
+        "filename": "outputs.tf",
+        "line": 10
+      },
+      "type": "string"
+    },
+    "vpn_server_id": {
+      "name": "vpn_server_id",
+      "description": "Client to Site VPN ID",
+      "value": "ibm_is_vpn_server.vpn.vpn_server",
+      "pos": {
+        "filename": "outputs.tf",
+        "line": 5
+      },
+      "type": "TypeString"
+    }
+  },
   "required_core": [
     "\u003e= 1.0.0"
   ],
-  "required_providers": {},
-  "managed_resources": {},
+  "required_providers": {
+    "ibm": {
+      "source": "ibm-cloud/ibm",
+      "version_constraints": [
+        "\u003e= 1.51.0"
+      ]
+    }
+  },
+  "managed_resources": {
+    "ibm_iam_access_group.cts_vpn_access_group": {
+      "mode": "managed",
+      "type": "ibm_iam_access_group",
+      "name": "cts_vpn_access_group",
+      "attributes": {
+        "count": "create_policy",
+        "name": "access_group_name"
+      },
+      "provider": {
+        "name": "ibm"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 26
+      }
+    },
+    "ibm_iam_access_group_members.cts_vpn_access_group_users": {
+      "mode": "managed",
+      "type": "ibm_iam_access_group_members",
+      "name": "cts_vpn_access_group_users",
+      "attributes": {
+        "count": "create_policy",
+        "ibm_ids": "vpn_client_access_group_users"
+      },
+      "provider": {
+        "name": "ibm"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 41
+      }
+    },
+    "ibm_iam_access_group_policy.cts_vpn_access_group_policy": {
+      "mode": "managed",
+      "type": "ibm_iam_access_group_policy",
+      "name": "cts_vpn_access_group_policy",
+      "attributes": {
+        "count": "create_policy"
+      },
+      "provider": {
+        "name": "ibm"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 32
+      }
+    },
+    "ibm_iam_authorization_policy.policy": {
+      "mode": "managed",
+      "type": "ibm_iam_authorization_policy",
+      "name": "policy",
+      "attributes": {
+        "count": "create_s2s_auth_policy",
+        "source_resource_group_id": "resource_group_id",
+        "target_resource_instance_id": "secrets_manager_id"
+      },
+      "provider": {
+        "name": "ibm"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 14
+      }
+    },
+    "ibm_is_vpn_server.vpn": {
+      "mode": "managed",
+      "type": "ibm_is_vpn_server",
+      "name": "vpn",
+      "attributes": {
+        "certificate_crn": "server_cert_crn",
+        "client_dns_server_ips": "client_dns_server_ips",
+        "client_idle_timeout": "client_idle_timeout",
+        "client_ip_pool": "client_ip_pool",
+        "enable_split_tunneling": "enable_split_tunneling",
+        "name": "vpn_gateway_name",
+        "resource_group": "resource_group_id"
+      },
+      "provider": {
+        "name": "ibm"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 48
+      }
+    },
+    "ibm_is_vpn_server_route.server_route": {
+      "mode": "managed",
+      "type": "ibm_is_vpn_server_route",
+      "name": "server_route",
+      "attributes": {
+        "for_each": "vpn_server_routes"
+      },
+      "provider": {
+        "name": "ibm"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 63
+      }
+    }
+  },
   "data_resources": {},
   "module_calls": {}
 }

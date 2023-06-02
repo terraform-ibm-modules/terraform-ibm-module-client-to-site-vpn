@@ -52,5 +52,13 @@ Brewfile.lock.json
 # Node modules
 /node_modules
 
+# Ignore ovpn files
+*.ovpn
+
+# Ignore PKI folder
+pki/
+
+# Ignore easy-rsa folder
+easy-rsa/
 # Visual Studio Code
 .vscode/
