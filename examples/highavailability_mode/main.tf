@@ -9,7 +9,8 @@ locals {
 ##############################################################################
 
 module "resource_group" {
-  source = "git::https://github.com/terraform-ibm-modules/terraform-ibm-resource-group.git?ref=v1.0.5"
+  source  = "terraform-ibm-modules/resource-group/ibm"
+  version = "1.0.5"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -79,7 +80,8 @@ module "secrets_manager_private_certificate" {
 
 # Minimal VPC for illustation purpose: 2 subnets across 2 availability zones
 module "basic_vpc" {
-  source               = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git?ref=v7.2.0"
+  source               = "terraform-ibm-modules/landing-zone-vpc/ibm"
+  version              = "7.2.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   name                 = "vpc"
