@@ -53,6 +53,7 @@
                     "label": "Standard",
                     "name": "standard",
                     "install_type": "extension",
+                    "working_directory": "examples/landing-zone",
                     "usage_template": "\n",
                     "configuration": [
                         {
