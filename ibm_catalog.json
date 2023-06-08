@@ -179,7 +179,7 @@
                             {
                                 "diagram": {
                                     "caption": "Client-to-site VPN configuration for accessing a landing zone.",
-                                    "url": "https://github.com/ccmitchellusa/terraform-ibm-client-to-site-vpn/blob/main/examples/landing-zone/c2s-basic.drawio.svg",
+                                    "url": "https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/blob/main/examples/landing-zone/c2s-basic.drawio.svg",
                                     "type": "image/svg+xml"
                                 },
                                 "description": "Client-to-site VPN configuration for accessing a landing zone."
