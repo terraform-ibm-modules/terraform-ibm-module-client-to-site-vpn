@@ -105,32 +105,32 @@
                         {
                             "key": "root_ca_name",
                             "required": false,
-                            "hidden":false   
+                            "hidden":false
                         },
                         {
                             "key": "root_ca_common_name",
                             "required": false,
-                            "hidden":false   
+                            "hidden":false
                         },
                         {
                             "key": "intermediate_ca_name",
                             "required": false,
-                            "hidden":false   
+                            "hidden":false
                         },
                         {
                             "key": "create_policy",
                             "required": true,
-                            "hidden":false   
+                            "hidden":false
                         },
                         {
                             "key": "vpn_client_access_group_users",
                             "required": false,
-                            "hidden":false   
+                            "hidden":false
                         },
                         {
                             "key": "access_group_name",
                             "required": true,
-                            "hidden":false   
+                            "hidden":false
                         }
                     ],
                     "iam_permissions": [
