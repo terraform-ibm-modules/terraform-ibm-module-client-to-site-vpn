@@ -79,7 +79,7 @@ module "secrets_manager_private_certificate" {
 
 # Minimal VPC for illustation purpose: 2 subnets across 2 availability zones
 module "basic_vpc" {
-  source               = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git?ref=v7.2.0"
+  source               = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git?ref=v7.3.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   name                 = "vpc"
