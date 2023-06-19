@@ -9,7 +9,8 @@ locals {
 ##############################################################################
 
 module "resource_group" {
-  source = "git::https://github.com/terraform-ibm-modules/terraform-ibm-resource-group.git?ref=v1.0.5"
+  source  = "terraform-ibm-modules/resource-group/ibm"
+  version = "1.0.5"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -45,7 +46,8 @@ resource "ibm_sm_secret_group" "secret_group" {
 module "private_secret_engine" {
   depends_on                = [ibm_resource_instance.secrets_manager]
   count                     = var.existing_sm_instance_guid == null ? 1 : 0
-  source                    = "git::https://github.com/terraform-ibm-modules/terraform-ibm-secrets-manager-private-cert-engine?ref=v1.0.0"
+  source                    = "terraform-ibm-modules/secrets-manager-private-cert-engine/ibm"
+  version                   = "1.0.0"
   secrets_manager_guid      = local.sm_guid
   region                    = local.sm_region
   root_ca_name              = var.root_ca_name
@@ -60,7 +62,8 @@ module "private_secret_engine" {
 
 module "secrets_manager_private_certificate" {
   depends_on             = [module.private_secret_engine]
-  source                 = "git::https://github.com/terraform-ibm-modules/terraform-ibm-secrets-manager-private-cert.git?ref=v1.0.0"
+  source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
+  version                = "1.0.0"
   cert_name              = "${var.prefix}-cts-vpn-private-cert"
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name
@@ -79,7 +82,8 @@ module "secrets_manager_private_certificate" {
 
 # Minimal VPC for illustation purpose: 2 subnets across 2 availability zones
 module "basic_vpc" {
-  source               = "git::https://github.com/terraform-ibm-modules/terraform-ibm-landing-zone-vpc.git?ref=v7.3.0"
+  source               = "terraform-ibm-modules/landing-zone-vpc/ibm"
+  version              = "7.3.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   name                 = "vpc"

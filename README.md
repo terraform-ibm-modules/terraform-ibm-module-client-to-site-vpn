@@ -50,7 +50,8 @@ For more information about the current VPN server limitations, see [VPN server l
 ```hcl
 # Replace "master" with a GIT release version to lock into a specific release
 module "client-to-site-vpn" {
-  source            = "git::https://github.com/terraform-ibm-module/terraform-ibm-client-to-site-vpn.git?ref=main"
+  source  = "terraform-ibm-modules/client-to-site-vpn/ibm"
+  version = "latest" # Replace "latest" with a release version to lock into a specific release
   server_cert_crn   = "crn:<...>" # CRN to a server secret or certificate in Secrets Manager
   vpn_gateway_name  = "example-vpn"
   resource_group_id = "65xxxxxxxxxxxxxxxa3fd"
