@@ -12,7 +12,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 89
+        "line": 84
       }
     },
     "client_auth_methods": {
@@ -22,7 +22,7 @@
       "default": "username",
       "pos": {
         "filename": "variables.tf",
-        "line": 28
+        "line": 31
       }
     },
     "client_dns_server_ips": {
@@ -35,7 +35,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 22
+        "line": 25
       },
       "elem": {
         "type": "TypeString"
@@ -51,7 +51,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 39
+        "line": 42
       },
       "min_value": "0",
       "max_value": "28800"
@@ -59,7 +59,7 @@
     "client_ip_pool": {
       "name": "client_ip_pool",
       "type": "string",
-      "description": "Client IP pool for the VPN",
+      "description": "The VPN client IPv4 address pool, expressed in CIDR format. The request must not overlap with any existing address prefixes in the VPC or any of the following reserved address ranges: - 127.0.0.0/8 (IPv4 loopback addresses) - 161.26.0.0/16 (IBM services) - 166.8.0.0/14 (Cloud Service Endpoints) - 169.254.0.0/16 (IPv4 link-local addresses) - 224.0.0.0/4 (IPv4 multicast addresses). The prefix length of the client IP address pool's CIDR must be between /9 (8,388,608 addresses) and /22 (1024 addresses). A CIDR block that contains twice the number of IP addresses that are required to enable the maximum number of concurrent connections is recommended.",
       "default": "10.0.0.0/20",
       "required": true,
       "source": [
@@ -67,7 +67,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 16
+        "line": 19
       },
       "matches": "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\\/(3[0-2]|[1-2][0-9]|[0-9]))$"
     },
@@ -83,7 +83,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 77
+        "line": 72
       }
     },
     "create_s2s_auth_policy": {
@@ -96,26 +96,26 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 95
+        "line": 90
       }
     },
     "enable_split_tunneling": {
       "name": "enable_split_tunneling",
       "type": "bool",
-      "description": "Enables split tunnel mode for the Client to Site VPN Creation",
+      "description": "Enables split tunnel mode for the Client to Site VPN server",
       "default": true,
       "source": [
         "ibm_is_vpn_server.vpn.enable_split_tunneling"
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 71
+        "line": 62
       }
     },
     "resource_group_id": {
       "name": "resource_group_id",
       "type": "string",
-      "description": "ID of the resource group to use when creating the VPC",
+      "description": "ID of the resource group to use when creating the VPN server",
       "required": true,
       "source": [
         "ibm_iam_authorization_policy.policy.source_resource_group_id",
@@ -141,7 +141,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 101
+        "line": 96
       },
       "immutable": true,
       "computed": true
@@ -156,17 +156,17 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 62
+        "line": 57
       }
     },
     "subnet_ids": {
       "name": "subnet_ids",
       "type": "list(string)",
-      "description": "List must have at least 1 subnet ID for standalone VPN and at least 2 subnet IDs for the High Availability mode.",
+      "description": "List of subnet IDs to provision this VPN server in. List must have at least 1 subnet ID for standalone VPN and at least 2 subnet IDs for the High Availability mode.",
       "required": true,
       "pos": {
         "filename": "variables.tf",
-        "line": 49
+        "line": 48
       }
     },
     "vpn_client_access_group_users": {
@@ -179,7 +179,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 83
+        "line": 78
       },
       "elem": {
         "type": "TypeString"
@@ -188,14 +188,14 @@
     "vpn_gateway_name": {
       "name": "vpn_gateway_name",
       "type": "string",
-      "description": "Name of the VPN",
-      "default": "test",
+      "description": "The user-defined name for the VPN server. If unspecified, the name will be a hyphenated list of randomly-selected words. Names must be unique within the VPC the VPN server is serving.",
+      "required": true,
       "source": [
         "ibm_is_vpn_server.vpn.name"
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 10
+        "line": 14
       },
       "min_length": 1,
       "max_length": 63,
@@ -211,7 +211,7 @@
       ],
       "pos": {
         "filename": "variables.tf",
-        "line": 107
+        "line": 106
       }
     }
   },
@@ -262,7 +262,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 26
+        "line": 28
       }
     },
     "ibm_iam_access_group_members.cts_vpn_access_group_users": {
@@ -278,7 +278,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 41
+        "line": 43
       }
     },
     "ibm_iam_access_group_policy.cts_vpn_access_group_policy": {
@@ -293,7 +293,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 32
+        "line": 34
       }
     },
     "ibm_iam_authorization_policy.policy": {
@@ -310,7 +310,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 14
+        "line": 16
       }
     },
     "ibm_is_vpn_server.vpn": {
@@ -331,7 +331,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 48
+        "line": 50
       }
     },
     "ibm_is_vpn_server_route.server_route": {
@@ -346,7 +346,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 63
+        "line": 65
       }
     }
   },

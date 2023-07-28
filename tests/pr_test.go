@@ -1,91 +1,164 @@
-// Tests in this file are run in the PR pipeline
+// Tests in this file are run in the PR pipeline and the continuous testing pipeline
 package test
 
 import (
 	"fmt"
+	"github.com/gruntwork-io/terratest/modules/files"
+	"github.com/gruntwork-io/terratest/modules/logger"
+	"github.com/gruntwork-io/terratest/modules/random"
+	"github.com/gruntwork-io/terratest/modules/terraform"
+	"github.com/stretchr/testify/require"
+	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
+	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
 	"log"
 	"os"
 	"strings"
 	"testing"
 
-	"github.com/gruntwork-io/terratest/modules/random"
 	"github.com/stretchr/testify/assert"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
-	"gopkg.in/yaml.v3"
 )
 
-// Allow the tests to create a unique resource group for every test to ensure tests do not clash. This is due to the fact that the auth policy created by this module has to be scoped to the resource group (see https://github.ibm.com/GoldenEye/client-to-site-vpn-module/pull/303#issuecomment-54128819) and hence would clash if tests used same resource group.
-// const resourceGroup = "geretain-test-client-to-site-vpn"
-const highAvailabilityModeExampleTerraformDir = "examples/highavailability_mode"
-const certificateTemplateName = "geretain-cert-template"
-
-var vpnClientAccessGroupUsers = []string{"GoldenEye.Development@ibm.com"}
-
+const resourceGroup = "geretain-test-client-to-site-vpn"
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
+const HAdir = "examples/ha-complete"
 
-type Config struct {
-	SmGuid   string `yaml:"secretsManagerGuid"`
-	SmRegion string `yaml:"secretsManagerRegion"`
-}
-
-var smGuid string
-var smRegion string
+var sharedInfoSvc *cloudinfo.CloudInfoService
+var permanentResources map[string]interface{}
 
 // TestMain will be run before any parallel tests, used to read data from yaml for use with tests
 func TestMain(m *testing.M) {
-	// Read the YAML file contents
-	data, err := os.ReadFile(yamlLocation)
+	sharedInfoSvc, _ = cloudinfo.NewCloudInfoServiceFromEnv("TF_VAR_ibmcloud_api_key", cloudinfo.CloudInfoServiceOptions{})
+
+	var err error
+	permanentResources, err = common.LoadMapFromYaml(yamlLocation)
 	if err != nil {
 		log.Fatal(err)
 	}
-	// Create a struct to hold the YAML data
-	var config Config
-	// Unmarshal the YAML data into the struct
-	err = yaml.Unmarshal(data, &config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	// Parse the SM guid and region from data
-	smGuid = config.SmGuid
-	smRegion = config.SmRegion
+
 	os.Exit(m.Run())
 }
 
-func setupOptions(t *testing.T, prefix string) *testhelper.TestOptions {
+func setupHAOptions(t *testing.T, prefix string) *testhelper.TestOptions {
 	options := testhelper.TestOptionsDefaultWithVars(&testhelper.TestOptions{
-		Testing:      t,
-		TerraformDir: highAvailabilityModeExampleTerraformDir,
-		Prefix:       prefix,
+		Testing:          t,
+		TerraformDir:     "examples/ha-complete",
+		Prefix:           prefix,
+		CloudInfoService: sharedInfoSvc,
+		/*
+		 Comment out the 'ResourceGroup' input to force this tests to create a unique resource group to ensure tests do
+		 not clash. This is due to the fact that an auth policy may already exist in this resource group since we are
+		 re-using a permanent secrets-manager instance, and the auth policy cannot be scoped to an exact VPN instance
+		 ID. This is due to the face that the VPN can't be provisioned without the cert from secrets manager, but it
+		 can't grab the cert from secrets manager until the policy is created. By using a new resource group, the auth
+		 policy will not already exist since this module scopes auth policies by resource group.
+		*/
 		//ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
-			"existing_sm_instance_guid":     smGuid,
-			"existing_sm_instance_region":   smRegion,
-			"certificate_template_name":     certificateTemplateName,
-			"access_group_name":             fmt.Sprintf("cts-%s", strings.ToLower(random.UniqueId())),
-			"vpn_client_access_group_users": vpnClientAccessGroupUsers,
+			"vpn_client_access_group_users": []string{"GoldenEye.Operations@ibm.com"},
+			"existing_sm_instance_guid":     permanentResources["secretsManagerGuid"],
+			"existing_sm_instance_region":   permanentResources["secretsManagerRegion"],
+			"certificate_template_name":     permanentResources["privateCertTemplateName"],
 		},
 	})
 	return options
 }
 
-func TestRunHighAvailabilityVPNExample(t *testing.T) {
+func TestRunHAExample(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "cts-ha-vpn")
-
+	options := setupHAOptions(t, "cts-vpn-ha")
 	output, err := options.RunTestConsistency()
 	assert.Nil(t, err, "This should not have errored")
 	assert.NotNil(t, output, "Expected some output")
 }
 
-func TestRunUpgradeHighAvailabilityVPNExample(t *testing.T) {
+func TestRunHAUpgrade(t *testing.T) {
 	t.Parallel()
 
-	options := setupOptions(t, "cts-vpn-upg")
-
+	options := setupHAOptions(t, "cts-vpn-ha-upg")
 	output, err := options.RunTestUpgrade()
 	if !options.UpgradeTestSkipped {
 		assert.Nil(t, err, "This should not have errored")
 		assert.NotNil(t, output, "Expected some output")
+	}
+}
+
+func TestRunSLZExample(t *testing.T) {
+	t.Parallel()
+
+	// ------------------------------------------------------------------------------------
+	// Deploy SLZ VPC first since it is needed for the landing-zone example input
+	// ------------------------------------------------------------------------------------
+
+	prefix := fmt.Sprintf("cts-slz-%s", strings.ToLower(random.UniqueId()))
+	realTerraformDir := "./resources"
+	tempTerraformDir, _ := files.CopyTerraformFolderToTemp(realTerraformDir, fmt.Sprintf(prefix+"-%s", strings.ToLower(random.UniqueId())))
+	tags := common.GetTagsFromTravis()
+
+	// Verify ibmcloud_api_key variable is set
+	checkVariable := "TF_VAR_ibmcloud_api_key"
+	val, present := os.LookupEnv(checkVariable)
+	require.True(t, present, checkVariable+" environment variable not set")
+	require.NotEqual(t, "", val, checkVariable+" environment variable is empty")
+
+	// Programmatically determine region to use based on availability
+	region, _ := testhelper.GetBestVpcRegion(val, "../common-dev-assets/common-go-assets/cloudinfo-region-vpc-gen2-prefs.yaml", "eu-de")
+
+	logger.Log(t, "Tempdir: ", tempTerraformDir)
+	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
+		TerraformDir: tempTerraformDir,
+		Vars: map[string]interface{}{
+			"prefix":        prefix,
+			"region":        region,
+			"resource_tags": tags,
+		},
+		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
+		// This is the same as setting the -upgrade=true flag with terraform.
+		Upgrade: true,
+	})
+
+	terraform.WorkspaceSelectOrNew(t, existingTerraformOptions, prefix)
+	_, existErr := terraform.InitAndApplyE(t, existingTerraformOptions)
+	if existErr != nil {
+		assert.True(t, existErr == nil, "Init and Apply of temp existing resource failed")
+	} else {
+
+		// ------------------------------------------------------------------------------------
+		// Deploy landing-zone example
+		// ------------------------------------------------------------------------------------
+
+		options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
+			Testing:      t,
+			TerraformDir: "examples/landing-zone",
+			// Do not hard fail the test if the implicit destroy steps fail to allow a full destroy of resource to occur
+			ImplicitRequired: false,
+			TerraformVars: map[string]interface{}{
+				"prefix":                      prefix,
+				"region":                      region,
+				"resource_group":              fmt.Sprintf("%s-management-rg", prefix),
+				"sm_service_plan":             "trial",
+				"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
+				"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
+				"certificate_template_name":   permanentResources["privateCertTemplateName"],
+				"landing_zone_prefix":         terraform.Output(t, existingTerraformOptions, "prefix"),
+			},
+		})
+
+		output, err := options.RunTestConsistency()
+		assert.Nil(t, err, "This should not have errored")
+		assert.NotNil(t, output, "Expected some output")
+	}
+
+	// Check if "DO_NOT_DESTROY_ON_FAILURE" is set
+	envVal, _ := os.LookupEnv("DO_NOT_DESTROY_ON_FAILURE")
+	// Destroy the temporary existing resources if required
+	if t.Failed() && strings.ToLower(envVal) == "true" {
+		fmt.Println("Terratest failed. Debug the test and delete resources manually.")
+	} else {
+		logger.Log(t, "START: Destroy (existing resources)")
+		terraform.Destroy(t, existingTerraformOptions)
+		terraform.WorkspaceDelete(t, existingTerraformOptions, prefix)
+		logger.Log(t, "END: Destroy (existing resources)")
 	}
 }

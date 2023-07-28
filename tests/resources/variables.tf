@@ -16,11 +16,6 @@ variable "prefix" {
   default     = "GoldenEye"
 }
 
-variable "resource_group" {
-  type        = string
-  description = "An existing resource group name to use for this example."
-}
-
 variable "resource_tags" {
   type        = list(string)
   description = "Optional list of tags to be added to created resources"

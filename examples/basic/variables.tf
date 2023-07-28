@@ -28,40 +28,19 @@ variable "resource_tags" {
   default     = []
 }
 
-variable "existing_sm_instance_guid" {
+variable "secrets_manager_guid" {
   type        = string
-  description = "Existing Secrets Manager GUID. The existing Secret Manager instance must have private certificate engine configured. If not provided an new instance will be provisioned."
-  default     = null
+  description = "Existing Secrets Manager GUID. The existing Secret Manager instance must have private certificate engine configured."
 }
 
-variable "existing_sm_instance_region" {
+variable "secrets_manager_region" {
   type        = string
-  description = "Required if value is passed into var.existing_sm_instance_guid"
-  default     = null
-}
-
-variable "sm_service_plan" {
-  type        = string
-  description = "Type of service plan to use to provision Secrets Manager if not using an existing one."
-  default     = "trial"
-}
-
-variable "root_ca_name" {
-  type        = string
-  description = "Name of the Root CA to create for a private_cert secret engine. Only used when var.existing_sm_instance_guid is false"
-  default     = "root-ca"
-}
-
-variable "intermediate_ca_name" {
-  type        = string
-  description = "Name of the Intermediate CA to create for a private_cert secret engine. Only used when var.existing_sm_instance_guid is false"
-  default     = "intermediate-ca"
+  description = "The region in which the Secrets Manager instance exists."
 }
 
 variable "certificate_template_name" {
   type        = string
-  description = "Name of the Certificate Template to create for a private_cert secret engine. When var.existing_sm_instance_guid is true, then it has to be the existing template name that exists in the private cert engine."
-  default     = "my-template"
+  description = "Name of an existing Certificate Template in the Secrets Manager instance to use for private cert creation."
 }
 
 variable "create_policy" {
@@ -76,34 +55,16 @@ variable "vpn_client_access_group_users" {
   default     = []
 }
 
-variable "access_group_name" {
-  type        = string
-  description = "Name of the IAM Access Group to create if var.create_policy is true"
-  default     = "client-to-site-vpn-access-group"
-}
-
 variable "vpn_server_routes" {
   type = map(object({
     destination = string
     action      = string
   }))
   description = "Map of server routes to be added to created VPN server."
-  # Disabling VPN Server Route creation as there is a bug while destroying them using Terraform. Issue tracked here: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4585
   default = {
-    #    "vpc-192" = {
-    #      destination = "192.168.0.0/22"
-    #      action      = "deliver"
-    #    }
+    "vpc-10" = {
+      destination = "10.0.0.0/8"
+      action      = "deliver"
+    }
   }
-}
-variable "root_ca_max_ttl" {
-  type        = string
-  description = "Maximum TTL value for the root CA"
-  default     = "8760h"
-}
-
-variable "root_ca_common_name" {
-  type        = string
-  description = "Fully qualified domain name or host domain name for the certificate to be created"
-  default     = "cloud.ibm.com"
 }

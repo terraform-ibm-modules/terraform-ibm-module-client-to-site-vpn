@@ -88,14 +88,14 @@ variable "vpn_server_routes" {
     action      = string
   }))
   description = "Map of server routes to be added to created VPN server."
-  # Disabling VPN Server Route creation as there is a bug while destroying them using Terraform. Issue tracked here: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4585
   default = {
-    #    "vpc-192" = {
-    #      destination = "192.168.0.0/22"
-    #      action      = "deliver"
-    #    }
+    "vpc-10" = {
+      destination = "10.0.0.0/8"
+      action      = "deliver"
+    }
   }
 }
+
 variable "root_ca_max_ttl" {
   type        = string
   description = "Maximum TTL value for the root CA"
