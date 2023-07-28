@@ -2,7 +2,7 @@
 
 A module creating a single-zone VPN client-to-site gateway in an existing landing-zone management VPC.
 ![client to site vpn for landing zones](./c2s-basic.drawio.png)
-The defaults values in this module are designed to work against the default values used in the landing-zone module (all 3 variations: VPC, OpenShift and VSI).
+The default values in this module are designed to work against the default values used in the landing-zone module (all 3 variations: VPC, OpenShift and VSI).
 
 ## Infrastructure
 
@@ -44,9 +44,9 @@ Once the client-to-site VPN gateway is set up, you can connect following the ste
    1. navigate to VPC infrastructure -> VPNs -> Client-to-site servers and select the client-to-site VPN server that was created
    2. Under the "Clients" tab, click "Download client profile
 3. Open the OpenVPN Client on your machine, and drag and drop the client profile file that was downloaded in the previous step
-4. At the first connection in OpenVPN client enter the following informations:
+4. At the first connection in OpenVPN client enter the following information:
    1. Username: a full email address
    2. Password: passcode obtained from https://iam.cloud.ibm.com/identity/passcode #pragma: allowlist secret
    3. Click "continue" when prompted for a certificate (there is no need for a certificate)
 
-At this point you should be able to reach any of the workload in the management VPC, including the OpenShift Web Console (management cluster only for now - an enhancement to this modue is coming to give access to the workload cluster as well).
+At this point you should be able to reach any of the workload in the management VPC, including the OpenShift Web Console (management cluster only for now - an enhancement to this module is coming to give access to the workload cluster as well).
