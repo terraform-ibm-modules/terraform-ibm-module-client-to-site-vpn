@@ -87,18 +87,18 @@ For more information about the access you need to run all the GoldenEye modules,
 <!-- END EXAMPLES HOOK -->
 
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
-## Requirements
+### Requirements
 
 | Name | Version |
 |------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.0.0 |
 | <a name="requirement_ibm"></a> [ibm](#requirement\_ibm) | >= 1.54.0, < 2.0.0 |
 
-## Modules
+### Modules
 
 No modules.
 
-## Resources
+### Resources
 
 | Name | Type |
 |------|------|
@@ -109,7 +109,7 @@ No modules.
 | [ibm_is_vpn_server.vpn](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_vpn_server) | resource |
 | [ibm_is_vpn_server_route.server_route](https://registry.terraform.io/providers/ibm-cloud/ibm/latest/docs/resources/is_vpn_server_route) | resource |
 
-## Inputs
+### Inputs
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
@@ -129,7 +129,7 @@ No modules.
 | <a name="input_vpn_gateway_name"></a> [vpn\_gateway\_name](#input\_vpn\_gateway\_name) | Name of the VPN | `string` | `"test"` | no |
 | <a name="input_vpn_server_routes"></a> [vpn\_server\_routes](#input\_vpn\_server\_routes) | Map of server routes to be added to created VPN server. | <pre>map(object({<br>    destination = string<br>    action      = string<br>  }))</pre> | `{}` | no |
 
-## Outputs
+### Outputs
 
 | Name | Description |
 |------|-------------|
