@@ -21,7 +21,6 @@ import (
 
 const resourceGroup = "geretain-test-client-to-site-vpn"
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
-const HAdir = "examples/ha-complete"
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
 var permanentResources map[string]interface{}
@@ -86,6 +85,11 @@ func TestRunHAUpgrade(t *testing.T) {
 
 func TestRunSLZExample(t *testing.T) {
 	t.Parallel()
+
+	// TODO: This test needs to be skipped until the below issues are resolved:
+	// https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721
+	// https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4722
+	t.Skip("Skipping TestRunSLZExample due to known issues")
 
 	// ------------------------------------------------------------------------------------
 	// Deploy SLZ VPC first since it is needed for the landing-zone example input
