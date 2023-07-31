@@ -28,21 +28,6 @@ variable "resource_tags" {
   default     = []
 }
 
-variable "base_vpn_gateway_name" {
-  type        = string
-  description = "Name of the VPN."
-  default     = "vpn"
-}
-
-##############################################################
-# Secret Manager
-##############################################################
-variable "sm_service_plan" {
-  type        = string
-  description = "Type of service plan to use to provision Secrets Manager."
-  default     = "trial"
-}
-
 variable "existing_sm_instance_guid" {
   type        = string
   description = "Existing Secrets Manager GUID. The existing Secret Manager instance must have private certificate engine configured. If not provided an new instance will be provisioned."
@@ -53,6 +38,12 @@ variable "existing_sm_instance_region" {
   type        = string
   description = "Required if value is passed into var.existing_sm_instance_guid"
   default     = null
+}
+
+variable "sm_service_plan" {
+  type        = string
+  description = "Type of service plan to use to provision Secrets Manager if not using an existing one."
+  default     = "trial"
 }
 
 variable "root_ca_name" {
@@ -97,14 +88,14 @@ variable "vpn_server_routes" {
     action      = string
   }))
   description = "Map of server routes to be added to created VPN server."
-  # Disabling VPN Server Route creation as there is a bug while destroying them using Terraform. Issue tracked here: https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4585
   default = {
-    #    "vpc-192" = {
-    #      destination = "192.168.0.0/22"
-    #      action      = "deliver"
-    #    }
+    "vpc-10" = {
+      destination = "10.0.0.0/8"
+      action      = "deliver"
+    }
   }
 }
+
 variable "root_ca_max_ttl" {
   type        = string
   description = "Maximum TTL value for the root CA"

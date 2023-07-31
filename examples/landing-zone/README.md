@@ -2,7 +2,7 @@
 
 A module creating a single-zone VPN client-to-site gateway in an existing landing-zone management VPC.
 ![client to site vpn for landing zones](./c2s-basic.drawio.png)
-The defaults values in this module are designed to work against the default values used in the landing-zone module (all 3 variations: VPC, OpenShift and VSI).
+The default values in this module are designed to work against the default values used in the landing-zone module (all 3 variations: VPC, OpenShift and VSI).
 
 ## Infrastructure
 
@@ -20,8 +20,6 @@ This module creates and configures the following infrastucture:
    - The gateway is located in the 'client-to-site-subnet' subnet mentioned
    - Attaches the 'client-to-site-sg' to the client-to-site VPN gateway
    - With routes configured to allow accessing the landing zone VPCs (management and workload)
-
-
 
 ## Usage
 
@@ -44,9 +42,18 @@ Once the client-to-site VPN gateway is set up, you can connect following the ste
    1. navigate to VPC infrastructure -> VPNs -> Client-to-site servers and select the client-to-site VPN server that was created
    2. Under the "Clients" tab, click "Download client profile
 3. Open the OpenVPN Client on your machine, and drag and drop the client profile file that was downloaded in the previous step
-4. At the first connection in OpenVPN client enter the following informations:
+4. At the first connection in OpenVPN client enter the following information:
    1. Username: a full email address
    2. Password: passcode obtained from https://iam.cloud.ibm.com/identity/passcode #pragma: allowlist secret
    3. Click "continue" when prompted for a certificate (there is no need for a certificate)
 
-At this point you should be able to reach any of the workload in the management VPC, including the OpenShift Web Console (management cluster only for now - an enhancement to this modue is coming to give access to the workload cluster as well).
+At this point you should be able to reach any of the workload in the management VPC, including the OpenShift Web Console (management cluster only for now - an enhancement to this module is coming to give access to the workload cluster as well).
+
+## Known issues
+
+On destroy, you may receive an error like this:
+
+`Error: [ERROR] DeleteVPNServerWithContext failed The provided If-Match 'W/f6a46ec086f646e35bce5d074a9437fc4f0670d5eee08532b071d53de9a4505a' value does not match the current ETag value of the VPN server 'W/04ae909bb4defa0aa2650d91eff3276d4b728826983f5fc45d2d1b9436d4ee67'.`
+
+This ia a known provider issue, and is being tracked at https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4722
+**Workaround:** Retry the terraform destroy and it should pass

@@ -11,6 +11,8 @@ locals {
 
 # IAM Service to Service Authorization
 # More info: https://cloud.ibm.com/docs/vpc?topic=vpc-client-to-site-authentication#creating-iam-service-to-service
+# NOTE: The auth policy cannot be scoped to the exact VPN server instance ID because the VPN can't be provisioned
+# without the cert from secrets manager, but it cant grab the cert from secrets manager until the policy is created.
 resource "ibm_iam_authorization_policy" "policy" {
   count                       = var.create_s2s_auth_policy ? 1 : 0
   source_service_name         = "is"
@@ -62,7 +64,7 @@ resource "ibm_is_vpn_server" "vpn" {
 
 resource "ibm_is_vpn_server_route" "server_route" {
   depends_on = [
-    resource.ibm_iam_access_group.cts_vpn_access_group
+    ibm_iam_authorization_policy.policy
   ]
   for_each    = var.vpn_server_routes
   vpn_server  = ibm_is_vpn_server.vpn.vpn_server

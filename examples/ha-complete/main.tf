@@ -1,12 +1,15 @@
+########################################################################################################################
+# Locals
+########################################################################################################################
+
 locals {
-  vpn_gateway_name = format("%s-%s", var.prefix, var.base_vpn_gateway_name)
-  sm_guid          = var.existing_sm_instance_guid == null ? ibm_resource_instance.secrets_manager[0].guid : var.existing_sm_instance_guid
-  sm_region        = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
+  sm_guid   = var.existing_sm_instance_guid == null ? ibm_resource_instance.secrets_manager[0].guid : var.existing_sm_instance_guid
+  sm_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
 }
 
-##############################################################################
+########################################################################################################################
 # Resource Group
-##############################################################################
+########################################################################################################################
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
@@ -16,10 +19,11 @@ module "resource_group" {
   existing_resource_group_name = var.resource_group
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
-# Secrets Manager Instance
-# ---------------------------------------------------------------------------------------------------------------------
+########################################################################################################################
+# Secrets Manager resources
+########################################################################################################################
 
+# Create a new SM instance if not using an existing one
 resource "ibm_resource_instance" "secrets_manager" {
   count             = var.existing_sm_instance_guid == null ? 1 : 0
   name              = "${var.prefix}-sm-instance"
@@ -33,16 +37,20 @@ resource "ibm_resource_instance" "secrets_manager" {
   provider = ibm.ibm-sm
 }
 
-# Best practice, use the secrets manager secret group module to create a secret group
-resource "ibm_sm_secret_group" "secret_group" {
-  name        = "${var.prefix}-certificates-secret-group"
-  description = "secret group used for private certificates"
-  region      = local.sm_region
-  instance_id = local.sm_guid
-  provider    = ibm.ibm-sm
+# Create a secret group to place the certificate in
+module "secrets_manager_group" {
+  source                   = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
+  version                  = "1.0.0"
+  region                   = local.sm_region
+  secrets_manager_guid     = local.sm_guid
+  secret_group_name        = "${var.prefix}-certs"
+  secret_group_description = "A secret group to store private certs"
+  providers = {
+    ibm = ibm.ibm-sm
+  }
 }
 
-
+# Configure private cert engine if provisioning a new SM instance
 module "private_secret_engine" {
   depends_on                = [ibm_resource_instance.secrets_manager]
   count                     = var.existing_sm_instance_guid == null ? 1 : 0
@@ -60,6 +68,7 @@ module "private_secret_engine" {
   }
 }
 
+# Create private cert to use for VPN server
 module "secrets_manager_private_certificate" {
   depends_on             = [module.private_secret_engine]
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
@@ -67,7 +76,7 @@ module "secrets_manager_private_certificate" {
   cert_name              = "${var.prefix}-cts-vpn-private-cert"
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name
-  cert_secrets_group_id  = ibm_sm_secret_group.secret_group.secret_group_id
+  cert_secrets_group_id  = module.secrets_manager_group.secret_group_id
   cert_common_name       = "example.com"
   secrets_manager_guid   = local.sm_guid
   secrets_manager_region = local.sm_region
@@ -76,11 +85,11 @@ module "secrets_manager_private_certificate" {
   }
 }
 
-# ---------------------------------------------------------------------------------------------------------------------
+########################################################################################################################
 # VPC
-# ---------------------------------------------------------------------------------------------------------------------
+########################################################################################################################
 
-# Minimal VPC for illustation purpose: 2 subnets across 2 availability zones
+# Minimal VPC for illustration purpose: 2 subnets across 2 availability zones
 module "basic_vpc" {
   source               = "terraform-ibm-modules/landing-zone-vpc/ibm"
   version              = "7.4.0"
@@ -121,10 +130,14 @@ data "ibm_is_vpc" "basic_vpc" {
   identifier = module.basic_vpc.vpc_id
 }
 
+########################################################################################################################
+# VPN
+########################################################################################################################
+
 module "vpn" {
   source                        = "../.."
   server_cert_crn               = module.secrets_manager_private_certificate.secret_crn
-  vpn_gateway_name              = local.vpn_gateway_name
+  vpn_gateway_name              = "${var.prefix}-c2s-vpn"
   resource_group_id             = module.resource_group.resource_group_id
   subnet_ids                    = slice([for subnet in data.ibm_is_vpc.basic_vpc.subnets : subnet["id"]], 0, 2)
   create_policy                 = var.create_policy

@@ -31,6 +31,7 @@ variable "base_vpn_gateway_name" {
 ##############################################################
 # Secret Manager
 ##############################################################
+
 variable "sm_service_plan" {
   type        = string
   description = "Type of service plan to use to provision Secrets Manager."
@@ -82,6 +83,7 @@ variable "create_policy" {
 variable "vpn_client_access_group_users" {
   description = "List of users in the Client to Site VPN Access Group"
   type        = list(string)
+  default     = []
 }
 
 variable "access_group_name" {
