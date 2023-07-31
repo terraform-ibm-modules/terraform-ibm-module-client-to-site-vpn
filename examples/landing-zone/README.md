@@ -21,8 +21,6 @@ This module creates and configures the following infrastucture:
    - Attaches the 'client-to-site-sg' to the client-to-site VPN gateway
    - With routes configured to allow accessing the landing zone VPCs (management and workload)
 
-
-
 ## Usage
 
 Here is an example creating a client-to-site VPN gateway a VPC with id `r018-dd5f14c5-2211-43c8-85d9-71b6d051de51` (replace with the id of the landing-zone management VPC). Access to the VPN is given to the users specified in the `vpn_client_access_group_users` variable.
@@ -50,3 +48,12 @@ Once the client-to-site VPN gateway is set up, you can connect following the ste
    3. Click "continue" when prompted for a certificate (there is no need for a certificate)
 
 At this point you should be able to reach any of the workload in the management VPC, including the OpenShift Web Console (management cluster only for now - an enhancement to this module is coming to give access to the workload cluster as well).
+
+## Known issues
+
+On destroy, you may receive an error like this:
+
+`Error: [ERROR] DeleteVPNServerWithContext failed The provided If-Match 'W/f6a46ec086f646e35bce5d074a9437fc4f0670d5eee08532b071d53de9a4505a' value does not match the current ETag value of the VPN server 'W/04ae909bb4defa0aa2650d91eff3276d4b728826983f5fc45d2d1b9436d4ee67'.`
+
+This ia a known provider issue, and is being tracked at https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4722
+**Workaround:** Retry the terraform destroy and it should pass

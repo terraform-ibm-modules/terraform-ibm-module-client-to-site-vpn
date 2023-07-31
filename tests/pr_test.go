@@ -86,11 +86,6 @@ func TestRunHAUpgrade(t *testing.T) {
 func TestRunSLZExample(t *testing.T) {
 	t.Parallel()
 
-	// TODO: This test needs to be skipped until the below issues are resolved:
-	// https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721
-	// https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4722
-	t.Skip("Skipping TestRunSLZExample due to known issues")
-
 	// ------------------------------------------------------------------------------------
 	// Deploy SLZ VPC first since it is needed for the landing-zone example input
 	// ------------------------------------------------------------------------------------
@@ -161,7 +156,12 @@ func TestRunSLZExample(t *testing.T) {
 		fmt.Println("Terratest failed. Debug the test and delete resources manually.")
 	} else {
 		logger.Log(t, "START: Destroy (existing resources)")
-		terraform.Destroy(t, existingTerraformOptions)
+		// TODO: Remove retry workaround when https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4722 is resolved
+		_, destroyErr := terraform.DestroyE(t, existingTerraformOptions)
+		if destroyErr != nil {
+			logger.Log(t, "WARNING: The first attempt at destroy failed - retrying the destroy due to known provider issue..")
+			terraform.Destroy(t, existingTerraformOptions)
+		}
 		terraform.WorkspaceDelete(t, existingTerraformOptions, prefix)
 		logger.Log(t, "END: Destroy (existing resources)")
 	}

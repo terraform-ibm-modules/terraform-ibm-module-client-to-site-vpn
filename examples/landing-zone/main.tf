@@ -224,6 +224,10 @@ resource "ibm_is_network_acl_rule" "allow_vpn_inbound" {
   source      = local.client_cidr
   destination = var.landing_zone_network_cidr
   direction   = "inbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
 }
 
 resource "ibm_is_network_acl_rule" "allow_vpn_outbound" {
@@ -235,4 +239,8 @@ resource "ibm_is_network_acl_rule" "allow_vpn_outbound" {
   source      = var.landing_zone_network_cidr
   destination = local.client_cidr
   direction   = "outbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
 }
