@@ -6,19 +6,17 @@ variable "ibmcloud_api_key" {
 
 variable "region" {
   type        = string
-  description = "Region to provision all resources created by this example."
-  default     = "us-south"
+  description = "Region to provision all resources"
 }
 
 variable "prefix" {
   type        = string
-  description = "Prefix to append to all resources created by this example"
-  default     = "slz-client-to-site"
+  description = "Prefix to append to all resources"
 }
 
 variable "resource_group" {
   type        = string
-  description = "Name of the resource group to use for this example. If not set, a resource group is created."
+  description = "Name of the resource group to use. If not set, a new resource group is created."
   default     = null
 }
 

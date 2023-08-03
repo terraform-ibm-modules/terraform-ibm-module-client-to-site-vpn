@@ -22,29 +22,29 @@
                 "VPN",
                 "OpenVPN"
             ],
-            "short_description": "Creates client-to-site VPN connectivity to landing zones using VPN Server ",
-            "long_description": "By default, the landing zone patterns are configured with private networks not available over the internet.  To access these networks, there are several connectivity options.  This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing landing zone.  Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.\n",
+            "short_description": "Creates client-to-site VPN connectivity to landing zones using VPN Server",
+            "long_description": "By default, the landing zone patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing landing zone. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.\n",
             "offering_docs_url": "https://ibm.ent.box.com/notes/1212695139323",
             "offering_icon_url": "https://broker-staging.vpnaasdev.cloud.ibm.com/C2S_icon.svg",
             "features": [
                 {
-                    "description": "A private certificate engine is configured in the Secret Manager instance. A secret group is created. A private certificate (the \"secret\") using the prvate certificate engine is created in the secret group created above\n",
+                    "description": "Supports creating and configuring a new Secrets Manager instance, or using an existing one, to create a secret group and a new private cert.",
                     "title": "Creates and configures an optional Secrets Manager instance, or uses existing."
                 },
                 {
-                    "description": "The network ACL on this subnet grants all access from any source.\n",
+                    "description": "The network ACL on this subnet grants all access from any source.",
                     "title": "A subnet named 'client-to-site-subnet' in the landing-zone management VPC"
                 },
                 {
-                    "description": "A new security group named 'client-to-site-sg' that allows all incoming request from any source\n",
+                    "description": "A new security group named 'client-to-site-sg' that allows all incoming request from any source",
                     "title": "client-to-site Security Group"
                 },
                 {
-                    "description": "An IAM access group allowing users to authenticate and connect to the client-to-site VPN gateway\n",
+                    "description": "An IAM access group allowing users to authenticate and connect to the client-to-site VPN gateway",
                     "title": "A new IAM Access Group for VPN users"
                 },
                 {
-                    "description": "Using the private certificate generated above and stored in the Secret Manager instance, the gateway is located in the 'client-to-site-subnet' subnet mentioned, and attaches the 'client-to-site-sg' to the client-to-site VPN gateway with routes configured to allow accessing the landing zone VPCs (management and workload)\n",
+                    "description": "VPN gateway located in the client-to-site-subnet subnet with routes configured to allow accessing the landing zone VPCs.",
                     "title": "A client-to-site VPN server"
                 }
             ],
@@ -53,7 +53,7 @@
                     "label": "Standard",
                     "name": "standard",
                     "install_type": "extension",
-                    "working_directory": "examples/landing-zone",
+                    "working_directory": "extensions/landing-zone",
                     "usage_template": "\n",
                     "configuration": [
                         {
@@ -179,7 +179,7 @@
                             {
                                 "diagram": {
                                     "caption": "Client-to-site VPN configuration for accessing a landing zone.",
-                                    "url": "https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/blob/main/examples/landing-zone/c2s-basic.drawio.svg",
+                                    "url": "https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/blob/main/extensions/landing-zone/c2s-basic.drawio.svg",
                                     "type": "image/svg+xml"
                                 },
                                 "description": "Client-to-site VPN configuration for accessing a landing zone."

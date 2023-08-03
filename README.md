@@ -13,7 +13,6 @@ This module automates the provisioning of a client-to-site VPN in a VPC cluster.
 * [terraform-ibm-client-to-site-vpn](#terraform-ibm-client-to-site-vpn)
 * [Examples](./examples)
     * [Basic example creating a standalone VPN server](./examples/basic)
-    * [Client-To-Site VPN add-on for landing zone](./examples/landing-zone)
     * [Complete example creating a high availability VPN server](./examples/ha-complete)
 * [Contributing](#contributing)
 
@@ -50,6 +49,9 @@ Once Client to Site VPN is deployed with access groups, follow these steps:
 #### VPN server limitations
 
 For more information about the current VPN server limitations, see [VPN server limitations](https://cloud.ibm.com/docs/vpc?topic=vpc-vpn-client-vpn-limitations&interface=ui).
+
+#### Deployable architecture extension
+See [Client-To-Site VPN add-on for landing zone](extensions/landing-zone)
 
 ### Usage
 
