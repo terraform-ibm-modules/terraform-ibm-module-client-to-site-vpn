@@ -90,7 +90,7 @@ func TestRunSLZExample(t *testing.T) {
 	t.Skip("Skipping TestRunSLZExample due to a known provider issue with destroy")
 
 	// ------------------------------------------------------------------------------------
-	// Deploy SLZ VPC first since it is needed for the landing-zone example input
+	// Deploy SLZ VPC first since it is needed for the landing-zone extension input
 	// ------------------------------------------------------------------------------------
 
 	prefix := fmt.Sprintf("cts-slz-%s", strings.ToLower(random.UniqueId()))
@@ -127,12 +127,12 @@ func TestRunSLZExample(t *testing.T) {
 	} else {
 
 		// ------------------------------------------------------------------------------------
-		// Deploy landing-zone example
+		// Deploy landing-zone extension
 		// ------------------------------------------------------------------------------------
 
 		options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 			Testing:      t,
-			TerraformDir: "examples/landing-zone",
+			TerraformDir: "extension/landing-zone",
 			// Do not hard fail the test if the implicit destroy steps fail to allow a full destroy of resource to occur
 			ImplicitRequired: false,
 			TerraformVars: map[string]interface{}{

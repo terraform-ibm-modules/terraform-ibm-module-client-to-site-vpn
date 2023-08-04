@@ -1,7 +1,7 @@
 # Client-To-Site VPN add-on for landing zone
 
 A module creating a single-zone VPN client-to-site gateway in an existing landing-zone management VPC.
-![client to site vpn for landing zones](./c2s-basic.drawio.png)
+![client to site vpn for landing zones](c2s-basic.drawio.png)
 The default values in this module are designed to work against the default values used in the landing-zone module (all 3 variations: VPC, OpenShift and VSI).
 
 ## Infrastructure
