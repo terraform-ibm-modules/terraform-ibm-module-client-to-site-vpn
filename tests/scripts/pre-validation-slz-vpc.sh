@@ -22,7 +22,7 @@ TF_VARS_FILE="terraform.tfvars"
   cd ${TERRAFORM_SOURCE_DIR}
   terraform init || exit 1
   echo "ibmcloud_api_key=\"${VALIDATION_APIKEY}\"" > ${TF_VARS_FILE}
-  echo "prefix=\"c2s-slz-catalog-$(openssl rand -hex 2)\"" >> ${TF_VARS_FILE}
+  echo "prefix=\"c2s-slz-$(openssl rand -hex 2)\"" >> ${TF_VARS_FILE}
   echo "region=\"${REGION}\"" >> ${TF_VARS_FILE}
   terraform apply -input=false -auto-approve -var-file=${TF_VARS_FILE} || exit 1
 
