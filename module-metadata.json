@@ -246,6 +246,12 @@
       "version_constraints": [
         "\u003e= 1.54.0, \u003c 2.0.0"
       ]
+    },
+    "time": {
+      "source": "hashicorp/time",
+      "version_constraints": [
+        "\u003e= 0.9.1"
+      ]
     }
   },
   "managed_resources": {
@@ -262,7 +268,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 28
+        "line": 35
       }
     },
     "ibm_iam_access_group_members.cts_vpn_access_group_users": {
@@ -278,7 +284,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 43
+        "line": 50
       }
     },
     "ibm_iam_access_group_policy.cts_vpn_access_group_policy": {
@@ -293,7 +299,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 34
+        "line": 41
       }
     },
     "ibm_iam_authorization_policy.policy": {
@@ -331,7 +337,7 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 50
+        "line": 57
       }
     },
     "ibm_is_vpn_server_route.server_route": {
@@ -346,7 +352,19 @@
       },
       "pos": {
         "filename": "main.tf",
-        "line": 65
+        "line": 72
+      }
+    },
+    "time_sleep.wait_for_authorization_policy": {
+      "mode": "managed",
+      "type": "time_sleep",
+      "name": "wait_for_authorization_policy",
+      "provider": {
+        "name": "time"
+      },
+      "pos": {
+        "filename": "main.tf",
+        "line": 27
       }
     }
   },

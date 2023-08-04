@@ -23,6 +23,13 @@ resource "ibm_iam_authorization_policy" "policy" {
   roles                       = ["SecretsReader"]
 }
 
+# workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
+resource "time_sleep" "wait_for_authorization_policy" {
+  depends_on = [ibm_iam_authorization_policy.policy]
+
+  create_duration = "30s"
+}
+
 # Access groups
 # More info: https://cloud.ibm.com/docs/vpc?topic=vpc-create-iam-access-group
 resource "ibm_iam_access_group" "cts_vpn_access_group" {
