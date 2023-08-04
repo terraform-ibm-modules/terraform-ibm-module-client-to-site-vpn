@@ -1,5 +1,10 @@
 #! /bin/bash
 
+########################################################################################################################
+## This script is used by the catalog pipeline to deploy SLZ VPC, which is a prerequisite for the client to site      ##
+## landing zone extension that is published to catalog                                                                ##
+########################################################################################################################
+
 set -e
 
 # Paths relative to base directory of script
