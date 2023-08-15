@@ -62,7 +62,7 @@ module "client-to-site-vpn" {
   server_cert_crn              = "crn:<...>" # CRN to a server secret or certificate in Secrets Manager
   vpn_gateway_name             = "example-vpn"
   resource_group_id            = "65xxxxxxxxxxxxxxxa3fd"
-  secret_manager_instance_guid = "839fxxxx-xxxx-xxxx-xxxx-xxxxxxx913b9"
+  secrets_manager_id           = "839fxxxx-xxxx-xxxx-xxxx-xxxxxxx913b9"
   subnet_ids                   = ["0726-ec96c7cd-46f4-4969-9009-7613f8e9e93"] # A list of IDs of subnets dedicated to the VPN in the VPC.
 }
 ```
@@ -77,6 +77,7 @@ You need the following permissions to run this module.
         - **Resource Group** \<your resource group>
         - `Viewer` resource group access
 
+<!-- Below content is automatically populated via pre-commit hook -->
 <!-- BEGINNING OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 ### Requirements
 
@@ -130,12 +131,9 @@ No modules.
 | <a name="output_vpn_server_id"></a> [vpn\_server\_id](#output\_vpn\_server\_id) | Client to Site VPN ID |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
-<!-- BEGIN CONTRIBUTING HOOK -->
 <!-- Leave this section as is so that your module has a link to local development environment set up steps for contributors to follow -->
 ## Contributing
 
 You can report issues and request features for this module in GitHub issues in the module repo. See [Report an issue or request a feature](https://github.com/terraform-ibm-modules/.github/blob/main/.github/SUPPORT.md).
 
 To set up your local development environment, see [Local development setup](https://terraform-ibm-modules.github.io/documentation/#/local-dev-setup) in the project documentation.
-<!-- Source for this readme file: https://github.com/terraform-ibm-modules/common-dev-assets/tree/main/module-assets/ci/module-template-automation -->
-<!-- END CONTRIBUTING HOOK -->
