@@ -62,7 +62,7 @@ module "client-to-site-vpn" {
   server_cert_crn              = "crn:<...>" # CRN to a server secret or certificate in Secrets Manager
   vpn_gateway_name             = "example-vpn"
   resource_group_id            = "65xxxxxxxxxxxxxxxa3fd"
-  secret_manager_instance_guid = "839fxxxx-xxxx-xxxx-xxxx-xxxxxxx913b9"
+  secrets_manager_id           = "839fxxxx-xxxx-xxxx-xxxx-xxxxxxx913b9"
   subnet_ids                   = ["0726-ec96c7cd-46f4-4969-9009-7613f8e9e93"] # A list of IDs of subnets dedicated to the VPN in the VPC.
 }
 ```
