@@ -56,7 +56,7 @@ See [Client-To-Site VPN add-on for landing zone](extensions/landing-zone)
 ### Usage
 
 ```hcl
-module "client-to-site-vpn" {
+module "client_to_site_vpn" {
   source                       = "terraform-ibm-modules/client-to-site-vpn/ibm"
   version                      = "XXX" # Replace "XXX" with a release version to lock into a specific release
   server_cert_crn              = "crn:<...>" # CRN to a server secret or certificate in Secrets Manager
