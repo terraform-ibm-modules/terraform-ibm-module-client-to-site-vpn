@@ -54,7 +54,7 @@
           "name": "standard",
           "install_type": "extension",
           "working_directory": "extensions/landing-zone",
-          "usage_template": "\n",
+          "usage_template": "module \"vpn\" {\n  source                        = \"https://cm.globalcatalog.cloud.ibm.com/api/v1-beta/offering/source//${{workingDirectory}}?archive=tgz&flavor=${{flavor}}&kind=${{kind}}&name=${{name}}&version=${{version}}\"/n  ibmcloud_api_key              = \"XXXXXXXXXXXXX\"\n  region                        = \"us-south\"\n  prefix                        = \"my-prefix\"\n  resource_group                = \"my-prefix-management-rg\"\n  landing_zone_prefix           = \"my-prefix\"\n}",
           "dependencies": [
             {
               "flavors": [
