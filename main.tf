@@ -21,6 +21,7 @@ resource "ibm_iam_authorization_policy" "policy" {
   target_service_name         = "secrets-manager"
   target_resource_instance_id = var.secrets_manager_id
   roles                       = ["SecretsReader"]
+  description                 = "Allow all VPN server instances in the resource group ${var.resource_group_id} to read from the Secrets Manager instance with ID ${var.secrets_manager_id}"
 }
 
 # workaround for https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4478
