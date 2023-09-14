@@ -86,9 +86,6 @@ func TestRunHAUpgrade(t *testing.T) {
 func TestRunSLZExample(t *testing.T) {
 	t.Parallel()
 
-	// TODO: This test needs to be skipped until https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4722 is resolved
-	t.Skip("Skipping TestRunSLZExample due to a known provider issue with destroy")
-
 	// ------------------------------------------------------------------------------------
 	// Deploy SLZ VPC first since it is needed for the landing-zone extension input
 	// ------------------------------------------------------------------------------------
