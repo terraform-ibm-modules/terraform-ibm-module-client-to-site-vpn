@@ -4,7 +4,7 @@
 
 module "landing_zone" {
   source           = "terraform-ibm-modules/landing-zone/ibm//patterns//vpc//module"
-  version          = "4.5.0"
+  version          = "4.9.1"
   ibmcloud_api_key = var.ibmcloud_api_key
   region           = var.region
   prefix           = var.prefix
