@@ -129,7 +129,7 @@ func TestRunSLZExample(t *testing.T) {
 
 		options := testhelper.TestOptionsDefault(&testhelper.TestOptions{
 			Testing:      t,
-			TerraformDir: "extension/landing-zone",
+			TerraformDir: "extensions/landing-zone",
 			// Do not hard fail the test if the implicit destroy steps fail to allow a full destroy of resource to occur
 			ImplicitRequired: false,
 			TerraformVars: map[string]interface{}{
