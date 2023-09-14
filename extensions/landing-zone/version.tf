@@ -4,7 +4,7 @@ terraform {
     # Locking into an exact version for a deployable architecture
     ibm = {
       source  = "IBM-Cloud/ibm"
-      version = "1.56.2"
+      version = "1.57.0"
     }
     time = {
       source  = "hashicorp/time"
