@@ -17,7 +17,7 @@ module "resource_group" {
 # Create a secret group to place the certificate in
 module "secrets_manager_group" {
   source                   = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
-  version                  = "1.0.1"
+  version                  = "1.0.2"
   region                   = var.secrets_manager_region
   secrets_manager_guid     = var.secrets_manager_guid
   secret_group_name        = "${var.prefix}-certs"
