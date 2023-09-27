@@ -109,7 +109,9 @@ variable "vpn_server_routes" {
   }
 }
 
-## VPC Landing Zone Targeting
+##############################################################
+# VPC Landing Zone Targeting
+##############################################################
 
 variable "landing_zone_prefix" {
   type        = string
@@ -129,15 +131,27 @@ variable "landing_zone_network_cidr" {
   default     = "10.0.0.0/8"
 }
 
-variable "vpn_subnet_cidr" {
+variable "vpn_subnet_cidr_zone_1" {
   type        = string
   description = "CIDR for the subnet hosting the client-to-site VPN gateway."
   default     = "10.10.40.0/24"
 }
 
-variable "vpn_zone" {
+variable "vpn_subnet_cidr_zone_2" {
   type        = string
-  description = "Zone where the VPN gateway will created. Defaults to the first zone in the region if not specified."
+  description = "CIDR for the subnet hosting the client-to-site VPN gateway."
+  default     = "10.20.40.0/24"
+}
+
+variable "vpn_zone_1" {
+  type        = string
+  description = "First zone where the VPN gateway will created. Defaults to the first zone in the region if not specified."
+  default     = null
+}
+
+variable "vpn_zone_2" {
+  type        = string
+  description = "Second zone where the VPN gateway will created. Defaults to the second zone in the region if not specified."
   default     = null
 }
 
@@ -145,4 +159,15 @@ variable "adjust_landing_zone_acls" {
   type        = bool
   description = "If true (default), module will update the landing-zone acl to allow inbound/outbound traffic to the vpn client ips"
   default     = true
+}
+
+variable "existing_subnet_names" {
+  description = "Subnets to which the VSI instances should be deployed"
+  type        = list(string)
+  default     = ["vsi-zone-1", "vsi-zone-2"]
+
+  validation {
+    error_message = "The list should have at least 1 subnet name and maximum of 2 subnet names"
+    condition     = (length(var.existing_subnet_names) == 0 || length(var.existing_subnet_names) < 3)
+  }
 }

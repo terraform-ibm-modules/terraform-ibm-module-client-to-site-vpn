@@ -91,20 +91,31 @@ module "secrets_manager_private_certificate" {
 ##############################################################################
 
 locals {
-  zone = var.vpn_zone != null ? var.vpn_zone : "${var.region}-1" # hardcode to first zone in region
+  zone_1 = var.vpn_zone_1 != null ? var.vpn_zone_1 : "${var.region}-1" # hardcode to first zone in region
+  zone_2 = var.vpn_zone_2 != null ? var.vpn_zone_2 : "${var.region}-2" # hardcode to second zone in region
 }
 
 
-resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes" {
-  name = "${var.prefix}-client-to-site-address-prefixes"
-  zone = local.zone
-  vpc  = var.vpc_id != null ? var.vpc_id : local.vpc_id
-  cidr = var.vpn_subnet_cidr
+resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_1" {
+  count = length(var.existing_subnet_names) > 0 ? 0 : 1
+  name  = "${var.prefix}-client-to-site-address-prefixes-1"
+  zone  = local.zone_1
+  vpc   = var.vpc_id != null ? var.vpc_id : local.vpc_id
+  cidr  = var.vpn_subnet_cidr_zone_1
+}
+
+resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_2" {
+  count = var.vpn_subnet_cidr_zone_2 != null && length(var.existing_subnet_names) == 0 ? 1 : 0
+  name  = "${var.prefix}-client-to-site-address-prefixes-2"
+  zone  = local.zone_2
+  vpc   = var.vpc_id != null ? var.vpc_id : local.vpc_id
+  cidr  = var.vpn_subnet_cidr_zone_2
 }
 
 resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
-  name = "${var.prefix}-client-to-site-acl"
-  vpc  = var.vpc_id != null ? var.vpc_id : local.vpc_id
+  count = length(var.existing_subnet_names) > 0 ? 0 : 1
+  name  = "${var.prefix}-client-to-site-acl"
+  vpc   = var.vpc_id != null ? var.vpc_id : local.vpc_id
   rules {
     name        = "outbound"
     action      = "allow"
@@ -129,20 +140,31 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
   }
 }
 
-resource "ibm_is_subnet" "client_to_site_subnet" {
-  depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes]
-  name            = "${var.prefix}-client-to-site-subnet"
+resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
+  count           = length(var.existing_subnet_names) > 0 ? 0 : 1
+  depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_1]
+  name            = "${var.prefix}-client-to-site-subnet-1"
   vpc             = var.vpc_id != null ? var.vpc_id : local.vpc_id
-  ipv4_cidr_block = var.vpn_subnet_cidr
-  zone            = local.zone
-  network_acl     = ibm_is_network_acl.client_to_site_vpn_acl.id
+  ipv4_cidr_block = var.vpn_subnet_cidr_zone_1
+  zone            = local.zone_1
+  network_acl     = ibm_is_network_acl.client_to_site_vpn_acl[0].id
+}
+
+resource "ibm_is_subnet" "client_to_site_subnet_zone_2" {
+  count           = var.vpn_subnet_cidr_zone_2 != null && length(var.existing_subnet_names) == 0 ? 1 : 0
+  depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_2]
+  name            = "${var.prefix}-client-to-site-subnet-2"
+  vpc             = var.vpc_id != null ? var.vpc_id : local.vpc_id
+  ipv4_cidr_block = var.vpn_subnet_cidr_zone_2
+  zone            = local.zone_2
+  network_acl     = ibm_is_network_acl.client_to_site_vpn_acl[0].id
 }
 
 # workaround for https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/issues/45
 resource "time_sleep" "wait_for_security_group" {
-  depends_on = [module.client_to_site_sg.ibm_is_security_group]
-
-  create_duration = "10s"
+  depends_on       = [module.client_to_site_sg.ibm_is_security_group]
+  create_duration  = "10s"
+  destroy_duration = "60s"
 }
 
 module "vpn" {
@@ -151,7 +173,7 @@ module "vpn" {
   server_cert_crn               = module.secrets_manager_private_certificate.secret_crn
   vpn_gateway_name              = local.vpn_gateway_name
   resource_group_id             = module.resource_group.resource_group_id
-  subnet_ids                    = [ibm_is_subnet.client_to_site_subnet.id]
+  subnet_ids                    = length(var.existing_subnet_names) > 0 ? local.subnets : [ibm_is_subnet.client_to_site_subnet_zone_1[0].id, ibm_is_subnet.client_to_site_subnet_zone_2[0].id]
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
   access_group_name             = "${var.prefix}-${var.access_group_name}"
@@ -194,6 +216,10 @@ locals {
   vpc_id             = var.vpc_id != null ? var.vpc_id : data.ibm_is_vpc.management_vpc_by_name[0].identifier
   management_subnets = var.vpc_id != null ? data.ibm_is_vpc.management_vpc_by_id[0] : data.ibm_is_vpc.management_vpc_by_name[0]
 
+  subnets = [
+    for subnet in local.management_subnets.subnets :
+    subnet.id if can(regex(join("|", var.existing_subnet_names), subnet.name))
+  ]
 }
 
 data "ibm_is_vpc" "management_vpc_by_id" {
