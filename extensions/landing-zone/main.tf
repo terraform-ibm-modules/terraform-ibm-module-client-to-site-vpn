@@ -220,6 +220,10 @@ locals {
     for subnet in local.management_subnets.subnets :
     subnet.id if can(regex(join("|", var.existing_subnet_names), subnet.name))
   ]
+  one_subnet = [
+    for subnet in local.management_subnets.subnets :
+    subnet if can(regex("vpn-zone-1", subnet.name))
+  ]
 }
 
 data "ibm_is_vpc" "management_vpc_by_id" {
@@ -234,7 +238,7 @@ data "ibm_is_vpc" "management_vpc_by_name" {
 
 data "ibm_is_subnet" "one_subnet" {
   count      = var.adjust_landing_zone_acls ? 1 : 0
-  identifier = local.management_subnets.subnets[1].id
+  identifier = local.one_subnet[0].id
 }
 
 data "ibm_is_network_acl_rules" "existing_inbound_rules" {
