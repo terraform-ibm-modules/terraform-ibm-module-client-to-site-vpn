@@ -164,7 +164,7 @@ variable "adjust_landing_zone_acls" {
 variable "existing_subnet_names" {
   description = "Subnets to which the VSI instances should be deployed"
   type        = list(string)
-  default     = ["vsi-zone-1", "vsi-zone-2"]
+  default     = []
 
   validation {
     error_message = "The list should have at least 1 subnet name and maximum of 2 subnet names"
