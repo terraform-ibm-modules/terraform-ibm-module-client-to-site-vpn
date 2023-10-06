@@ -15,9 +15,9 @@ This module automates the provisioning of a client-to-site VPN in a VPC cluster.
     * [Basic example creating a standalone VPN server](./examples/basic)
     * [Complete example creating a high availability VPN server](./examples/ha-complete)
 * [Contributing](#contributing)
+<!-- END OVERVIEW HOOK -->
 
 ## terraform-ibm-client-to-site-vpn
-<!-- END OVERVIEW HOOK -->
 
 ### Network topology
 
@@ -58,7 +58,7 @@ See [Client-To-Site VPN add-on for landing zone](extensions/landing-zone)
 ```hcl
 module "client_to_site_vpn" {
   source                       = "terraform-ibm-modules/client-to-site-vpn/ibm"
-  version                      = "XXX" # Replace "XXX" with a release version to lock into a specific release
+  version                      = "X.X.X" # Replace "X.X.X" with a release version to lock into a specific release
   server_cert_crn              = "crn:<...>" # CRN to a server secret or certificate in Secrets Manager
   vpn_gateway_name             = "example-vpn"
   resource_group_id            = "65xxxxxxxxxxxxxxxa3fd"
