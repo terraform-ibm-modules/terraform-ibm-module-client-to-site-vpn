@@ -133,25 +133,25 @@ variable "landing_zone_network_cidr" {
 
 variable "vpn_subnet_cidr_zone_1" {
   type        = string
-  description = "CIDR for the subnet hosting the client-to-site VPN gateway."
+  description = "CIDR range to use from the first zone in the region (or zone specified in the vpn_zone_1 variable)"
   default     = "10.10.40.0/24"
 }
 
 variable "vpn_subnet_cidr_zone_2" {
   type        = string
-  description = "CIDR for the subnet hosting the client-to-site VPN gateway."
-  default     = "10.20.40.0/24"
+  description = "CIDR range to use from the second zone in the region (or zone specified in the vpn_zone_2 variable). If not specified, VPN will only be deployed to a single zone (standalone deployment)"
+  default     = null
 }
 
 variable "vpn_zone_1" {
   type        = string
-  description = "First zone where the VPN gateway will created. Defaults to the first zone in the region if not specified."
+  description = "Optionally specify the first zone where the VPN gateway will be created. If not specified, it will default to the first zone in the region"
   default     = null
 }
 
 variable "vpn_zone_2" {
   type        = string
-  description = "Second zone where the VPN gateway will created. Defaults to the second zone in the region if not specified."
+  description = "Optionally specify the second zone where the VPN gateway will be created. If not specified, it will default to the second zone in the region but only if you have specified a value for vpn_subnet_cidr_zone_2"
   default     = null
 }
 
@@ -167,7 +167,7 @@ variable "existing_subnet_names" {
   default     = []
 
   validation {
-    error_message = "The list should have at least 1 subnet name and maximum of 2 subnet names"
+    error_message = "Optionally pass a list of existing subnet names (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the vpn_subnet_cidr_zone_1 and vpn_subnet_cidr_zone_2 variables."
     condition     = (length(var.existing_subnet_names) == 0 || length(var.existing_subnet_names) < 3)
   }
 }

@@ -173,7 +173,7 @@ module "vpn" {
   server_cert_crn               = module.secrets_manager_private_certificate.secret_crn
   vpn_gateway_name              = local.vpn_gateway_name
   resource_group_id             = module.resource_group.resource_group_id
-  subnet_ids                    = length(var.existing_subnet_names) > 0 ? local.subnets : [ibm_is_subnet.client_to_site_subnet_zone_1[0].id, ibm_is_subnet.client_to_site_subnet_zone_2[0].id]
+  subnet_ids                    = length(var.existing_subnet_names) > 0 ? local.subnets : var.vpn_subnet_cidr_zone_2 != null ? [ibm_is_subnet.client_to_site_subnet_zone_1[0].id, ibm_is_subnet.client_to_site_subnet_zone_2[0].id] : [ibm_is_subnet.client_to_site_subnet_zone_1[0].id]
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
   access_group_name             = "${var.prefix}-${var.access_group_name}"
