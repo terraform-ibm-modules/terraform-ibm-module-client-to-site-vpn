@@ -23,8 +23,8 @@
         "OpenVPN"
       ],
       "short_description": "Creates client-to-site VPN connectivity to landing zones using VPN Server",
-      "long_description": "By default, the landing zone patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing landing zone. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.\n",
-      "offering_docs_url": "https://test.cloud.ibm.com/docs/solution-tutorials?topic=solution-tutorials-connect-landingzone-client-vpn",
+      "long_description": "By default, the landing zone patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing landing zone. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.",
+      "offering_docs_url": "https://cloud.ibm.com/docs/solution-tutorials?topic=solution-tutorials-connect-landingzone-client-vpn",
       "offering_icon_url": "https://broker-staging.vpnaasdev.cloud.ibm.com/C2S_icon.svg",
       "features": [
         {
@@ -54,7 +54,6 @@
           "name": "standard",
           "install_type": "extension",
           "working_directory": "extensions/landing-zone",
-          "usage_template": "module \"vpn\" {\n  source                        = \"https://cm.globalcatalog.cloud.ibm.com/api/v1-beta/offering/source//${{workingDirectory}}?archive=tgz&flavor=${{flavor}}&kind=${{kind}}&name=${{name}}&version=${{version}}\"/n  ibmcloud_api_key              = \"XXXXXXXXXXXXX\"\n  region                        = \"us-south\"\n  prefix                        = \"my-prefix\"\n  resource_group                = \"my-prefix-management-rg\"\n  landing_zone_prefix           = \"my-prefix\"\n}",
           "dependencies": [
             {
               "flavors": [
@@ -83,19 +82,6 @@
           ],
           "configuration": [
             {
-              "hidden": false,
-              "key": "vpc_id"
-            },
-            {
-              "hidden": false,
-              "key": "landing_zone_prefix"
-            },
-            {
-              "key": "landing_zone_network_cidr",
-              "hidden": false,
-              "required": true
-            },
-            {
               "custom_config": {
                 "config_constraints": {
                   "generationType": "2"
@@ -106,57 +92,6 @@
               },
               "key": "region",
               "required": true
-            },
-            {
-              "key": "ibmcloud_api_key",
-              "required": true,
-              "type": "password"
-            },
-            {
-              "key": "resource_group"
-            },
-            {
-              "key": "existing_sm_instance_guid",
-              "hidden": false
-            },
-            {
-              "key": "existing_sm_instance_region",
-              "hidden": false
-            },
-            {
-              "key": "prefix",
-              "required": false,
-              "hidden": false
-            },
-            {
-              "key": "root_ca_name",
-              "required": false,
-              "hidden": false
-            },
-            {
-              "key": "root_ca_common_name",
-              "required": false,
-              "hidden": false
-            },
-            {
-              "key": "intermediate_ca_name",
-              "required": false,
-              "hidden": false
-            },
-            {
-              "key": "create_policy",
-              "required": true,
-              "hidden": false
-            },
-            {
-              "key": "vpn_client_access_group_users",
-              "required": false,
-              "hidden": false
-            },
-            {
-              "key": "access_group_name",
-              "required": true,
-              "hidden": false
             }
           ],
           "iam_permissions": [
