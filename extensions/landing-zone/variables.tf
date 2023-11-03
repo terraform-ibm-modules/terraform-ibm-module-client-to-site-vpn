@@ -72,6 +72,21 @@ variable "certificate_template_name" {
   default     = "my-template"
 }
 
+variable "cert_common_name" {
+  type        = string
+  description = "Fully qualified domain name or host domain name for the certificate to be created"
+
+  validation {
+    condition     = length(var.cert_common_name) >= 4 && length(var.cert_common_name) <= 128
+    error_message = "length of cert_common_name must be >= 4 and <= 128"
+  }
+
+  validation {
+    condition     = can(regex("(.*?)", var.cert_common_name))
+    error_message = "cert_common_name must match regular expression /(.*?)/"
+  }
+}
+
 variable "create_policy" {
   description = "Set to true to create a new access group (using the value of var.access_group_name) with a VPN Client role"
   type        = bool

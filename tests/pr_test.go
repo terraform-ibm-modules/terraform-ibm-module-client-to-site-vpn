@@ -3,6 +3,11 @@ package test
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -10,16 +15,11 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
-	"log"
-	"os"
-	"strings"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
 
-const resourceGroup = "geretain-test-client-to-site-vpn"
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
@@ -44,15 +44,6 @@ func setupHAOptions(t *testing.T, prefix string) *testhelper.TestOptions {
 		TerraformDir:     "examples/ha-complete",
 		Prefix:           prefix,
 		CloudInfoService: sharedInfoSvc,
-		/*
-		 Comment out the 'ResourceGroup' input to force this tests to create a unique resource group to ensure tests do
-		 not clash. This is due to the fact that an auth policy may already exist in this resource group since we are
-		 re-using a permanent secrets-manager instance, and the auth policy cannot be scoped to an exact VPN instance
-		 ID. This is due to the face that the VPN can't be provisioned without the cert from secrets manager, but it
-		 can't grab the cert from secrets manager until the policy is created. By using a new resource group, the auth
-		 policy will not already exist since this module scopes auth policies by resource group.
-		*/
-		//ResourceGroup: resourceGroup,
 		TerraformVars: map[string]interface{}{
 			"vpn_client_access_group_users": []string{"GoldenEye.Operations@ibm.com"},
 			"existing_sm_instance_guid":     permanentResources["secretsManagerGuid"],
@@ -140,6 +131,7 @@ func TestRunSLZExample(t *testing.T) {
 				"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 				"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 				"certificate_template_name":   permanentResources["privateCertTemplateName"],
+				"cert_common_name":            "goldeneye.appdomain.cloud",
 				"landing_zone_prefix":         terraform.Output(t, existingTerraformOptions, "prefix"),
 			},
 		})
