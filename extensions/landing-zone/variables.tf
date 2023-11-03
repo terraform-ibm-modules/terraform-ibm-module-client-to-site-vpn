@@ -162,12 +162,12 @@ variable "adjust_landing_zone_acls" {
 }
 
 variable "existing_subnet_names" {
-  description = "Subnets to which the VSI instances should be deployed"
+  description = "Optionally pass a list of existing subnet names (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the vpn_subnet_cidr_zone_1 and vpn_subnet_cidr_zone_2 variables."
   type        = list(string)
   default     = []
 
   validation {
-    error_message = "Optionally pass a list of existing subnet names (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the vpn_subnet_cidr_zone_1 and vpn_subnet_cidr_zone_2 variables."
+    error_message = "existing_subnet_names supports a maximum of 2 subnets"
     condition     = (length(var.existing_subnet_names) == 0 || length(var.existing_subnet_names) < 3)
   }
 }
