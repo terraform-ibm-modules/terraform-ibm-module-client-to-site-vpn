@@ -183,7 +183,7 @@ module "vpn" {
 
 module "client_to_site_sg" {
   source                       = "terraform-ibm-modules/security-group/ibm"
-  version                      = "2.1.0"
+  version                      = "2.2.0"
   add_ibm_cloud_internal_rules = true
   vpc_id                       = var.vpc_id != null ? var.vpc_id : local.vpc_id
   resource_group               = module.resource_group.resource_group_id
