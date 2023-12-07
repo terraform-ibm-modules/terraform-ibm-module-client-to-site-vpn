@@ -1,7 +1,7 @@
 #! /bin/bash
 
 ########################################################################################################################
-## This script is used by the catalog pipeline to destroy the SLZ VPC, which is a prerequisite for the client to site ##
+## This script is used by the catalog pipeline to deploy the SLZ VPC, which is a prerequisite for the client to site  ##
 ## landing zone extension, after catalog validation has complete.                                                     ##
 ########################################################################################################################
 
@@ -23,12 +23,10 @@ TF_VARS_FILE="terraform.tfvars"
   echo "region=\"${REGION}\"" >> ${TF_VARS_FILE}
   terraform apply -input=false -auto-approve -var-file=${TF_VARS_FILE} || exit 1
 
-  prefix_var_name="landing_zone_prefix"
-  prefix_var_value=$(terraform output -state=terraform.tfstate -raw prefix)
-  rg_var_name="resource_group"
-  rg_var_value="${prefix_var_value}-management-rg"
-  echo "Appending '${prefix_var_name}' and '${rg_var_name}' input variable values to ${JSON_FILE}.."
-  jq -r --arg prefix_var_name "${prefix_var_name}" --arg prefix_var_value "${prefix_var_value}" --arg rg_var_name "${rg_var_name}" --arg rg_var_value "${rg_var_value}" --arg region "${REGION}" '. + {($prefix_var_name): $prefix_var_value, ($rg_var_name): $rg_var_value, "prefix": $prefix_var_value, "region": $region}' "${JSON_FILE}" > tmpfile && mv tmpfile "${JSON_FILE}" || exit 1
+  prefix=$(terraform output -state=terraform.tfstate -raw prefix)
+  rg="${prefix}-management-rg"
+  echo "Appending '${prefix}' and '${rg}' input variable values to ${JSON_FILE}.."
+  jq -r --arg prefix "${prefix}" --arg rg "${rg}" --arg region "${REGION}" '. + {landing_zone_prefix: $prefix, resource_group: $rg, region: $region}' "${JSON_FILE}" > tmpfile && mv tmpfile "${JSON_FILE}" || exit 1
 
   echo "Pre-validation complete successfully"
 )
