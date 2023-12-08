@@ -29,7 +29,13 @@ TF_VARS_FILE="terraform.tfvars"
   rg_var_value="${prefix_var_value}-management-rg"
   region_var_name="region"
   echo "Appending '${prefix_var_name}', '${rg_var_name}' and '${region_var_name}' input variable values to ${JSON_FILE}.."
-  jq -r --arg prefix_var_name "${prefix_var_name}" --arg prefix_var_value "${prefix_var_value}" --arg rg_var_name "${rg_var_name}" --arg rg_var_value "${rg_var_value}" --arg region_var_name "${region_var_name}" --arg region_var_value "${REGION}" '. + {($prefix_var_name): $prefix_var_value, ($rg_var_name): $rg_var_value, ($region_var_name): $region_var_value}' "${JSON_FILE}" > tmpfile && mv tmpfile "${JSON_FILE}" || exit 1
+  jq -r --arg prefix_var_name "${prefix_var_name}" \
+        --arg prefix_var_value "${prefix_var_value}" \
+        --arg rg_var_name "${rg_var_name}" \
+        --arg rg_var_value "${rg_var_value}" \
+        --arg region_var_name "${region_var_name}" \
+        --arg region_var_value "${REGION}" \
+        '. + {($prefix_var_name): $prefix_var_value, ($rg_var_name): $rg_var_value, ($region_var_name): $region_var_value}' "${JSON_FILE}" > tmpfile && mv tmpfile "${JSON_FILE}" || exit 1
 
   echo "Pre-validation complete successfully"
 )
