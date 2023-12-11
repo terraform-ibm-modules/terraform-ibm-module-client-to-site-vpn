@@ -23,7 +23,6 @@ TF_VARS_FILE="terraform.tfvars"
   echo "prefix=\"c2s-slz-$(openssl rand -hex 2)\"" >> ${TF_VARS_FILE}
   echo "region=\"${REGION}\"" >> ${TF_VARS_FILE}
   terraform apply -input=false -auto-approve -var-file=${TF_VARS_FILE} || exit 1
-  cd "${cwd}"
 
   prefix_var_name="landing_zone_prefix"
   prefix_var_value=$(terraform output -state=terraform.tfstate -raw prefix)
@@ -31,6 +30,8 @@ TF_VARS_FILE="terraform.tfvars"
   rg_var_value="${prefix_var_value}-management-rg"
   region_var_name="region"
   echo "Appending '${prefix_var_name}', '${rg_var_name}' and '${region_var_name}' input variable values to ${JSON_FILE}.."
+  
+  cd "${cwd}"
   jq -r --arg prefix_var_name "${prefix_var_name}" \
         --arg prefix_var_value "${prefix_var_value}" \
         --arg rg_var_name "${rg_var_name}" \
