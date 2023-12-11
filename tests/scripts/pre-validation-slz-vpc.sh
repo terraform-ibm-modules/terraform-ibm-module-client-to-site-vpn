@@ -14,6 +14,7 @@ REGION="us-south"
 TF_VARS_FILE="terraform.tfvars"
 
 (
+  cwd=$(pwd)
   cd ${TERRAFORM_SOURCE_DIR}
   echo "Provisioning prerequisite SLZ VPC .."
   terraform init || exit 1
@@ -22,6 +23,7 @@ TF_VARS_FILE="terraform.tfvars"
   echo "prefix=\"c2s-slz-$(openssl rand -hex 2)\"" >> ${TF_VARS_FILE}
   echo "region=\"${REGION}\"" >> ${TF_VARS_FILE}
   terraform apply -input=false -auto-approve -var-file=${TF_VARS_FILE} || exit 1
+  cd "${cwd}"
 
   prefix_var_name="landing_zone_prefix"
   prefix_var_value=$(terraform output -state=terraform.tfstate -raw prefix)
