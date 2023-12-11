@@ -30,7 +30,7 @@ TF_VARS_FILE="terraform.tfvars"
   rg_var_value="${prefix_var_value}-management-rg"
   region_var_name="region"
   echo "Appending '${prefix_var_name}', '${rg_var_name}' and '${region_var_name}' input variable values to ${JSON_FILE}.."
-  
+
   cd "${cwd}"
   jq -r --arg prefix_var_name "${prefix_var_name}" \
         --arg prefix_var_value "${prefix_var_value}" \
