@@ -42,5 +42,7 @@ TF_VARS_FILE="terraform.tfvars"
         --arg region_var_value "${REGION}" \
         '. + {($prefix_var_name): $prefix_var_value, ($rg_var_name): $rg_var_value, ($region_var_name): $region_var_value}' "${JSON_FILE}" > tmpfile && mv tmpfile "${JSON_FILE}" || exit 1
 
+  cat "${JSON_FILE}"
+
   echo "Pre-validation complete successfully"
 )
