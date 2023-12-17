@@ -26,7 +26,8 @@ TF_VARS_FILE="terraform.tfvars"
   } >> ${TF_VARS_FILE}
   terraform apply -input=false -auto-approve -var-file=${TF_VARS_FILE} || exit 1
 
-  prefix_var_name="landing_zone_prefix"
+  prefix_var_name="prefix"
+  slz_prefix_var_name="landing_zone_prefix"
   prefix_var_value=$(terraform output -state=terraform.tfstate -raw prefix)
   rg_var_name="resource_group"
   rg_var_value="${prefix_var_value}-management-rg"
@@ -35,14 +36,13 @@ TF_VARS_FILE="terraform.tfvars"
 
   cd "${cwd}"
   jq -r --arg prefix_var_name "${prefix_var_name}" \
+        --arg slz_prefix_var_name "${slz_prefix_var_name}" \
         --arg prefix_var_value "${prefix_var_value}" \
         --arg rg_var_name "${rg_var_name}" \
         --arg rg_var_value "${rg_var_value}" \
         --arg region_var_name "${region_var_name}" \
         --arg region_var_value "${REGION}" \
-        '. + {($prefix_var_name): $prefix_var_value, ($rg_var_name): $rg_var_value, ($region_var_name): $region_var_value}' "${JSON_FILE}" > tmpfile && mv tmpfile "${JSON_FILE}" || exit 1
-
-  cat "${JSON_FILE}"
+        '. + {($prefix_var_name): $prefix_var_value, ($slz_prefix_var_name): $prefix_var_value, ($rg_var_name): $rg_var_value, ($region_var_name): $region_var_value}' "${JSON_FILE}" > tmpfile && mv tmpfile "${JSON_FILE}" || exit 1
 
   echo "Pre-validation complete successfully"
 )
