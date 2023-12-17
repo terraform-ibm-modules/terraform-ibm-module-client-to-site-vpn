@@ -19,9 +19,11 @@ TF_VARS_FILE="terraform.tfvars"
   echo "Provisioning prerequisite SLZ VPC .."
   terraform init || exit 1
   # $VALIDATION_APIKEY is available in the catalog runtime
-  echo "ibmcloud_api_key=\"${VALIDATION_APIKEY}\"" > ${TF_VARS_FILE}
-  echo "prefix=\"c2s-slz-$(openssl rand -hex 2)\"" >> ${TF_VARS_FILE}
-  echo "region=\"${REGION}\"" >> ${TF_VARS_FILE}
+  {
+    echo "ibmcloud_api_key=\"${VALIDATION_APIKEY}\""
+    echo "prefix=\"ct2-slz-$(openssl rand -hex 2)\""
+    echo "region=\"${REGION}\""
+  } >> ${TF_VARS_FILE}
   terraform apply -input=false -auto-approve -var-file=${TF_VARS_FILE} || exit 1
 
   prefix_var_name="landing_zone_prefix"
