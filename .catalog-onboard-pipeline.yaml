@@ -11,5 +11,3 @@ offerings:
         install_type: extension
         pre_validation: "tests/scripts/pre-validation-slz-vpc.sh"
         post_validation: "tests/scripts/post-validation-slz-vpc.sh"
-        destroy_resources_on_failure: true
-        destroy_workspace_on_failure: false
