@@ -3,14 +3,9 @@
   "extends": ["github>terraform-ibm-modules/common-dev-assets:commonRenovateConfig"],
   "packageRules": [
     {
-      "description": "Use fix as Semantic Commit prefix for all dependency updates in these folders to generate release",
-      "matchPaths": ["extensions/landing-zone"],
-      "semanticCommitType": "fix"
-    },
-    {
       "description": "Allow the locked in provider version to be updated to the latest for DAs",
       "enabled": true,
-      "matchPaths": ["extensions/landing-zone"],
+      "matchFileNames": ["extensions/landing-zone/**"],
       "matchManagers": ["terraform"],
       "matchDepTypes": ["required_provider"],
       "rangeStrategy": "bump",

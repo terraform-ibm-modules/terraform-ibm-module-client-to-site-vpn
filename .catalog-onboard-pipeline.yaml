@@ -1,0 +1,13 @@
+---
+apiVersion: v1
+offerings:
+  - name: deploy-arch-ibm-slz-c2s-vpn
+    kind: solution
+    catalog_id: 7df1e4ca-d54c-4fd0-82ce-3d13247308cd
+    offering_id: 1b824983-263f-4191-bfcd-c1d1b2220aa3
+    variations:
+      - name: standard
+        mark_ready: false
+        install_type: extension
+        pre_validation: "tests/scripts/pre-validation-slz-vpc.sh"
+        post_validation: "tests/scripts/post-validation-slz-vpc.sh"

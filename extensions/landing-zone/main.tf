@@ -14,7 +14,7 @@ locals {
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
-  version = "1.1.0"
+  version = "1.1.4"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -59,7 +59,7 @@ module "private_secret_engine" {
 # Create a secret group to place the certificate in
 module "secrets_manager_group" {
   source                   = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
-  version                  = "1.1.0"
+  version                  = "1.1.3"
   region                   = local.sm_region
   secrets_manager_guid     = local.sm_guid
   secret_group_name        = "${var.prefix}-certificates-secret-group"
@@ -183,7 +183,7 @@ module "vpn" {
 
 module "client_to_site_sg" {
   source                       = "terraform-ibm-modules/security-group/ibm"
-  version                      = "2.2.0"
+  version                      = "2.3.0"
   add_ibm_cloud_internal_rules = true
   vpc_id                       = var.vpc_id != null ? var.vpc_id : local.vpc_id
   resource_group               = module.resource_group.resource_group_id

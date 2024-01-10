@@ -3,9 +3,11 @@
 ##############################################################################
 
 module "landing_zone" {
-  source  = "terraform-ibm-modules/landing-zone/ibm//patterns//vpc//module"
-  version = "4.13.3"
-  region  = var.region
-  prefix  = var.prefix
-  tags    = var.resource_tags
+  source                 = "terraform-ibm-modules/landing-zone/ibm//patterns//vpc//module"
+  version                = "5.3.2"
+  region                 = var.region
+  prefix                 = var.prefix
+  tags                   = var.resource_tags
+  enable_transit_gateway = false
+  add_atracker_route     = false
 }

@@ -13,7 +13,7 @@ locals {
 
 module "resource_group" {
   source  = "terraform-ibm-modules/resource-group/ibm"
-  version = "1.1.0"
+  version = "1.1.4"
   # if an existing resource group is not set (null) create a new one using prefix
   resource_group_name          = var.resource_group == null ? "${var.prefix}-resource-group" : null
   existing_resource_group_name = var.resource_group
@@ -40,7 +40,7 @@ resource "ibm_resource_instance" "secrets_manager" {
 # Create a secret group to place the certificate in
 module "secrets_manager_group" {
   source                   = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
-  version                  = "1.1.0"
+  version                  = "1.1.3"
   region                   = local.sm_region
   secrets_manager_guid     = local.sm_guid
   secret_group_name        = "${var.prefix}-certs"
@@ -92,7 +92,7 @@ module "secrets_manager_private_certificate" {
 # Minimal VPC for illustration purpose: 2 subnets across 2 availability zones
 module "basic_vpc" {
   source               = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version              = "7.7.0"
+  version              = "7.13.2"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   name                 = "vpc"
