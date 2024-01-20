@@ -72,7 +72,7 @@ module "private_secret_engine" {
 module "secrets_manager_private_certificate" {
   depends_on             = [module.private_secret_engine]
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
-  version                = "1.1.1"
+  version                = "1.1.2"
   cert_name              = "${var.prefix}-cts-vpn-private-cert"
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name
@@ -92,7 +92,7 @@ module "secrets_manager_private_certificate" {
 # Minimal VPC for illustration purpose: 2 subnets across 2 availability zones
 module "basic_vpc" {
   source               = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version              = "7.13.2"
+  version              = "7.15.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   name                 = "vpc"
