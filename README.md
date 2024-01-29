@@ -33,7 +33,7 @@ The VPN server is deployed in a selected multizone (MZR) region and VPC.
 - **VPN Server authentication**: The VPN server certificate is needed at the time of provisioning of the VPN server. The server certificate CRN in the IBM Cloud Secrets Manager is required.
 - **VPN Client authentication**: The client authentication method is required at the time of provisioning of the VPN server. The VPN server supports "username" based authentication. There is no support for the "certificate" based authentication at this point of time.
 - **Split tunnel mode**: This module provisions a client-to-site VPN with the split tunnel mode. When the VPN connection is set up, an encrypted tunnel is created over the internet to the VPN server. The split tunnel mode supports sending private traffic that is destined to the VPC inside the VPN tunnel and sending public traffic (internet traffic) outside the VPN tunnel.
-- **Accessing VPC clusters**:
+- **Accessing the VPC clusters**:
   - Through the private service endpoint: Set up `vpn_server_routes` as mentioned [here](https://cloud.ibm.com/docs/openshift?topic=openshift-access_cluster#access_private_se).
   - Through the Virtual Private Endpoint (VPE) gateway: Set up `vpn_server_routes` as mentioned [here](https://cloud.ibm.com/docs/openshift?topic=openshift-access_cluster#vpc_vpe).
 
