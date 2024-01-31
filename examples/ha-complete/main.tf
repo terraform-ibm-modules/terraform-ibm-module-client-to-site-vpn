@@ -3,7 +3,7 @@
 ########################################################################################################################
 
 locals {
-  sm_guid   = var.existing_sm_instance_guid == null ? ibm_resource_instance.secrets_manager[0].guid : var.existing_sm_instance_guid
+  sm_guid   = var.existing_sm_instance_guid == null ? module.secrets_manager.secrets_manager_guid : var.existing_sm_instance_guid
   sm_region = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
 }
 
@@ -24,17 +24,15 @@ module "resource_group" {
 ########################################################################################################################
 
 # Create a new SM instance if not using an existing one
-resource "ibm_resource_instance" "secrets_manager" {
-  count             = var.existing_sm_instance_guid == null ? 1 : 0
-  name              = "${var.prefix}-sm-instance"
-  service           = "secrets-manager"
-  plan              = var.sm_service_plan
-  location          = local.sm_region
-  resource_group_id = module.resource_group.resource_group_id
-  timeouts {
-    create = "20m" # Extending provisioning time to 20 minutes
-  }
-  provider = ibm.ibm-sm
+module "secrets_manager" {
+  source               = "terraform-ibm-modules/secrets-manager/ibm"
+  version              = "1.1.0"
+  resource_group_id    = module.resource_group.resource_group_id
+  region               = local.sm_region
+  secrets_manager_name = "${var.prefix}-secrets-manager"
+  sm_service_plan      = var.sm_service_plan
+  service_endpoints    = "public-and-private"
+  sm_tags              = var.resource_tags
 }
 
 # Create a secret group to place the certificate in
@@ -52,7 +50,7 @@ module "secrets_manager_group" {
 
 # Configure private cert engine if provisioning a new SM instance
 module "private_secret_engine" {
-  depends_on                = [ibm_resource_instance.secrets_manager]
+  depends_on                = [module.secrets_manager]
   count                     = var.existing_sm_instance_guid == null ? 1 : 0
   source                    = "terraform-ibm-modules/secrets-manager-private-cert-engine/ibm"
   version                   = "1.2.0"
