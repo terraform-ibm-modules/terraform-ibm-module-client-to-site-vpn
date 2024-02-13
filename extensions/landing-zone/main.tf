@@ -73,7 +73,7 @@ module "secrets_manager_group" {
 module "secrets_manager_private_certificate" {
   depends_on             = [module.private_secret_engine]
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
-  version                = "1.1.1"
+  version                = "1.1.2"
   cert_name              = "${var.prefix}-cts-vpn-private-cert"
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name
@@ -183,7 +183,7 @@ module "vpn" {
 
 module "client_to_site_sg" {
   source                       = "terraform-ibm-modules/security-group/ibm"
-  version                      = "2.3.0"
+  version                      = "2.3.1"
   add_ibm_cloud_internal_rules = true
   vpc_id                       = var.vpc_id != null ? var.vpc_id : local.vpc_id
   resource_group               = module.resource_group.resource_group_id
