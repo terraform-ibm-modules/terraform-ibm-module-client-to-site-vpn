@@ -141,7 +141,7 @@ func TestRunSLZExample(t *testing.T) {
 				"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 				"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 				"certificate_template_name":   permanentResources["privateCertTemplateName"],
-				"cert_common_name":            permanentResources["domain"],
+				"cert_common_name":            permanentResources["dnsDelegatedCloudDomain"],
 				"landing_zone_prefix":         terraform.Output(t, existingTerraformOptions, "prefix"),
 			},
 		})
