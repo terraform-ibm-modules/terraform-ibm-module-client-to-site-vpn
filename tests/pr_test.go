@@ -3,6 +3,11 @@ package test
 
 import (
 	"fmt"
+	"log"
+	"os"
+	"strings"
+	"testing"
+
 	"github.com/gruntwork-io/terratest/modules/files"
 	"github.com/gruntwork-io/terratest/modules/logger"
 	"github.com/gruntwork-io/terratest/modules/random"
@@ -10,16 +15,12 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/cloudinfo"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/common"
-	"log"
-	"os"
-	"strings"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/terraform-ibm-modules/ibmcloud-terratest-wrapper/testhelper"
 )
 
-const resourceGroup = "geretain-test-client-to-site-vpn"
+// const resourceGroup = "geretain-test-client-to-site-vpn"
 const yamlLocation = "../common-dev-assets/common-go-assets/common-permanent-resources.yaml"
 
 var sharedInfoSvc *cloudinfo.CloudInfoService
@@ -140,6 +141,7 @@ func TestRunSLZExample(t *testing.T) {
 				"existing_sm_instance_guid":   permanentResources["secretsManagerGuid"],
 				"existing_sm_instance_region": permanentResources["secretsManagerRegion"],
 				"certificate_template_name":   permanentResources["privateCertTemplateName"],
+				"cert_common_name":            permanentResources["dnsDelegatedCloudDomain"],
 				"landing_zone_prefix":         terraform.Output(t, existingTerraformOptions, "prefix"),
 			},
 		})
