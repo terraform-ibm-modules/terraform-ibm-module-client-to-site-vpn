@@ -72,6 +72,11 @@ variable "certificate_template_name" {
   default     = "my-template"
 }
 
+variable "cert_common_name" {
+  type        = string
+  description = "Fully qualified domain name or host domain name for the certificate to be created"
+}
+
 variable "create_policy" {
   description = "Set to true to create a new access group (using the value of var.access_group_name) with a VPN Client role"
   type        = bool
