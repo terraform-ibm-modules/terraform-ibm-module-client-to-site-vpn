@@ -21,4 +21,4 @@ repository:
 
   description: "Creates a client-to-site VPN gateway in a VPC"
 
-  topics: core-team, terraform, ibm-cloud, terraform-module, client-to-site, vpn, supported, graduated
+  topics: core-team, terraform, ibm-cloud, terraform-module, client-to-site, vpn, supported, graduated, deployable-architecture
