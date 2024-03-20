@@ -1,7 +1,7 @@
 {
   "products": [
     {
-      "name": "deploy-arch-ibm-slz-c2s-vpn",
+      "name": "deploy-arch-ibm-client-to-site-vpn",
       "label": "Client to Site VPN access to VPC landing zone",
       "product_kind": "solution",
       "tags": [
