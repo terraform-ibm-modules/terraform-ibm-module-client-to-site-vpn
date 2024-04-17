@@ -26,12 +26,12 @@ module "resource_group" {
 # Create a new SM instance if not using an existing one
 module "secrets_manager" {
   source               = "terraform-ibm-modules/secrets-manager/ibm"
-  version              = "1.1.6"
+  version              = "1.5.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = local.sm_region
   secrets_manager_name = "${var.prefix}-secrets-manager"
   sm_service_plan      = var.sm_service_plan
-  service_endpoints    = "public-and-private"
+  allowed_network      = "public-and-private"
   sm_tags              = var.resource_tags
 }
 
