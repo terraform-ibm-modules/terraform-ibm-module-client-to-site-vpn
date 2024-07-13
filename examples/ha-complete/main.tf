@@ -26,7 +26,7 @@ module "resource_group" {
 # Create a new SM instance if not using an existing one
 module "secrets_manager" {
   source               = "terraform-ibm-modules/secrets-manager/ibm"
-  version              = "1.15.2"
+  version              = "1.16.0"
   count                = var.existing_sm_instance_guid == null ? 1 : 0
   resource_group_id    = module.resource_group.resource_group_id
   region               = local.sm_region
@@ -91,7 +91,7 @@ module "secrets_manager_private_certificate" {
 # Minimal VPC for illustration purpose: 2 subnets across 2 availability zones
 module "basic_vpc" {
   source               = "terraform-ibm-modules/landing-zone-vpc/ibm"
-  version              = "7.18.3"
+  version              = "7.19.0"
   resource_group_id    = module.resource_group.resource_group_id
   region               = var.region
   name                 = "vpc"
