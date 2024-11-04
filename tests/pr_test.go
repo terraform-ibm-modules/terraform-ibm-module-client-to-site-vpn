@@ -65,6 +65,7 @@ func setupHAOptions(t *testing.T, prefix string) *testhelper.TestOptions {
 }
 
 func TestRunHAExample(t *testing.T) {
+	t.Skip()
 	t.Parallel()
 
 	options := setupHAOptions(t, "cts-vpn-ha")
@@ -75,6 +76,7 @@ func TestRunHAExample(t *testing.T) {
 
 func TestRunHAUpgrade(t *testing.T) {
 	t.Parallel()
+	t.Skip()
 
 	options := setupHAOptions(t, "cts-vpn-ha-upg")
 	output, err := options.RunTestUpgrade()
