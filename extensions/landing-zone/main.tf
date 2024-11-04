@@ -2,6 +2,7 @@
 # Locals
 ########################################################################################################################
 
+
 locals {
   vpn_gateway_name = format("%s-%s", var.prefix, var.base_vpn_gateway_name)
   sm_guid          = var.existing_sm_instance_guid == null ? ibm_resource_instance.secrets_manager[0].guid : var.existing_sm_instance_guid
