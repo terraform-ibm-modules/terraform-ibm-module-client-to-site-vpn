@@ -13,11 +13,15 @@ variable "region" {
 variable "prefix" {
   type        = string
   description = "Prefix to append to all resources created by this example"
-  default     = "GoldenEye"
 }
 
 variable "resource_tags" {
   type        = list(string)
   description = "Optional list of tags to be added to created resources"
   default     = []
+}
+
+variable "existing_secrets_manager_instance_crn" {
+  type        = string
+  description = "The CRN of existing secrets manager to use to create service credential secrets."
 }
