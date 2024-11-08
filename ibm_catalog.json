@@ -2,7 +2,7 @@
   "products": [
     {
       "name": "deploy-arch-ibm-client-to-site-vpn",
-      "label": "Client to Site VPN access to VPC",
+      "label": "Cloud automation for Client to Site VPN",
       "product_kind": "solution",
       "tags": [
         "network",
