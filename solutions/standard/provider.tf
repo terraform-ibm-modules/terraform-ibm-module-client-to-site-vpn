@@ -1,6 +1,6 @@
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
-  region           = var.existing_sm_instance_region == null ? var.region : var.existing_sm_instance_region
+  region           = module.existing_sm_crn_parser.region
   alias            = "ibm-sm"
 }
 

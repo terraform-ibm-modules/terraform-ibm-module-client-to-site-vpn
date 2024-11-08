@@ -2,7 +2,7 @@
   "products": [
     {
       "name": "deploy-arch-ibm-client-to-site-vpn",
-      "label": "Cloud automation for Client to Site VPN",
+      "label": "Client to Site VPN access to VPC",
       "product_kind": "solution",
       "tags": [
         "network",
@@ -14,7 +14,6 @@
       ],
       "keywords": [
         "vpc",
-        "slz",
         "IaC",
         "infrastructure as code",
         "terraform",
@@ -22,19 +21,19 @@
         "VPN",
         "OpenVPN"
       ],
-      "short_description": "Creates client-to-site VPN connectivity to landing zones using VPN Server",
-      "long_description": "By default, the landing zone patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing landing zone. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.",
+      "short_description": "Creates client-to-site VPN connectivity to VPC",
+      "long_description": "Some VPC patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing VPC. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.",
       "offering_docs_url": "https://cloud.ibm.com/docs/secure-infrastructure-vpc?topic=secure-infrastructure-vpc-connect-landingzone-client-vpn",
       "offering_icon_url": "https://broker-staging.vpnaasdev.cloud.ibm.com/C2S_icon.svg",
       "provider_name": "IBM",
       "features": [
         {
-          "description": "Supports creating and configuring a new Secrets Manager instance, or using an existing one, to create a secret group and a new private cert.",
-          "title": "Creates and configures an optional Secrets Manager instance, or uses existing."
+          "description": "Supports using an existing Secrets Manager instance, to create a secret group and a new private cert.",
+          "title": "Configures existing Secrets Manager instance, and create a secret group and a new private cert."
         },
         {
           "description": "The network ACL on this subnet grants all access from any source.",
-          "title": "A subnet named 'client-to-site-subnet' in the landing-zone management VPC"
+          "title": "A subnet named 'client-to-site-subnet' in the VPC"
         },
         {
           "description": "A new security group named 'client-to-site-sg' that allows all incoming request from any source",
@@ -45,7 +44,7 @@
           "title": "A new IAM Access Group for VPN users"
         },
         {
-          "description": "VPN gateway located in the client-to-site-subnet subnet with routes configured to allow accessing the landing zone VPCs.",
+          "description": "VPN gateway located in the client-to-site-subnet subnet with routes configured to allow accessing the VPCs.",
           "title": "A client-to-site VPN server"
         }
       ],
@@ -54,7 +53,7 @@
           "label": "Standard",
           "name": "standard",
           "install_type": "extension",
-          "working_directory": "extensions/landing-zone",
+          "working_directory": "solutions/standard",
           "dependencies": [
             {
               "flavors": [
@@ -86,6 +85,21 @@
           ],
           "configuration": [
             {
+              "key": "ibmcloud_api_key"
+            },
+            {
+              "key": "prefix"
+            },
+            {
+              "key": "use_existing_resource_group"
+            },
+            {
+              "key": "resource_group_name"
+            },
+            {
+              "key": "name"
+            },
+            {
               "custom_config": {
                 "config_constraints": {
                   "generationType": "2"
@@ -96,6 +110,66 @@
               },
               "key": "region",
               "required": true
+            },
+            {
+              "key": "existing_secrets_manager_instance_crn"
+            },
+            {
+              "key": "existing_secrets_manager_cert_crn"
+            },
+            {
+              "key": "cert_common_name"
+            },
+            {
+              "key": "root_ca_name"
+            },
+            {
+              "key": "root_ca_common_name"
+            },
+            {
+              "key": "intermediate_ca_name"
+            },
+            {
+              "key": "certificate_template_name"
+            },
+            {
+              "key": "existing_subnet_names"
+            },
+            {
+              "key": "vpn_subnet_cidr_zone_1"
+            },
+            {
+              "key": "vpn_subnet_cidr_zone_2"
+            },
+            {
+              "key": "vpn_client_access_group_users"
+            },
+            {
+              "key": "access_group_name"
+            },
+            {
+              "key": "create_policy"
+            },
+            {
+              "key": "vpn_server_routes"
+            },
+            {
+              "key": "existing_vpc_crn"
+            },
+            {
+              "key": "adjust_existing_vpc_acls"
+            },
+            {
+              "key": "adjust_existing_subnet_name"
+            },
+            {
+              "key": "adjust_network_cidr"
+            },
+            {
+              "key": "vpn_zone_1"
+            },
+            {
+              "key": "vpn_zone_2"
             }
           ],
           "iam_permissions": [

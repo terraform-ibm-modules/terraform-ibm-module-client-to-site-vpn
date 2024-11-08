@@ -1,5 +1,4 @@
 {
   "ibmcloud_api_key": $VALIDATION_APIKEY,
-  "sm_service_plan": "trial",
   "cert_common_name": $DNS_CLOUD_DOMAIN
 }
