@@ -5,6 +5,6 @@ provider "ibm" {
 
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
-  region           = module.existing_sm_crn_parser.region
+  region           = module.secrets_manager.secrets_manager_region
   alias            = "ibm-sm"
 }

@@ -24,4 +24,11 @@ variable "resource_tags" {
 variable "existing_secrets_manager_instance_crn" {
   type        = string
   description = "The CRN of existing secrets manager to use to create service credential secrets."
+  default     = null
+}
+
+variable "certificate_template_name" {
+  type        = string
+  description = "The name of the Certificate Template to create for a private certificate"
+  default     = null
 }

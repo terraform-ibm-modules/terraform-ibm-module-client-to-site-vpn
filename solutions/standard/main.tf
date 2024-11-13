@@ -19,7 +19,6 @@ locals {
   var.root_ca_common_name == null || var.intermediate_ca_name == null || var.certificate_template_name == null) ? tobool("Set cert_common_name, root_ca_name, root_ca_common_name, intermediate_ca_name and certificate_template_name if existing_secrets_manager_cert_crn is not set") : true
 }
 module "existing_sm_crn_parser" {
-  # count   = var.existing_secrets_manager_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
   version = "1.0.0"
   crn     = var.existing_secrets_manager_instance_crn
@@ -62,7 +61,7 @@ module "secrets_manager_private_certificate" {
   depends_on             = [module.private_secret_engine]
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
   version                = "1.3.1"
-  cert_name              = var.prefix != null ? "${var.prefix}-cts-vpn-private-cert" : "cats-vpn-private-cert"
+  cert_name              = var.prefix != null ? "${var.prefix}-cts-vpn-private-cert" : "cts-vpn-private-cert"
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name
   cert_secrets_group_id  = module.secrets_manager_group[0].secret_group_id

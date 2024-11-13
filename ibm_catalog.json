@@ -9,12 +9,11 @@
         "ibm_created",
         "target_terraform",
         "terraform",
-        "reference_architecture",
         "solution"
       ],
       "keywords": [
-        "vpc",
         "IaC",
+        "network",
         "infrastructure as code",
         "terraform",
         "solution",
@@ -23,8 +22,8 @@
       ],
       "short_description": "Creates client-to-site VPN connectivity to VPC",
       "long_description": "Some VPC patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing VPC. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.",
-      "offering_docs_url": "https://cloud.ibm.com/docs/secure-infrastructure-vpc?topic=secure-infrastructure-vpc-connect-landingzone-client-vpn",
-      "offering_icon_url": "https://broker-staging.vpnaasdev.cloud.ibm.com/C2S_icon.svg",
+      "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/blob/main/solutions/standard/README.md",
+      "offering_icon_url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/main/images/c2s_vpn.svg",
       "provider_name": "IBM",
       "features": [
         {

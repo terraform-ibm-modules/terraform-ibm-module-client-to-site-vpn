@@ -110,10 +110,9 @@ func TestSolutionInSchematics(t *testing.T) {
 	existingTerraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: tempTerraformDir,
 		Vars: map[string]interface{}{
-			"prefix":                                prefix,
-			"region":                                region,
-			"resource_tags":                         []string{"test-schematic"},
-			"existing_secrets_manager_instance_crn": permanentResources["secretsManagerCRN"],
+			"prefix":        prefix,
+			"region":        region,
+			"resource_tags": []string{"test-schematic"},
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
 		// This is the same as setting the -upgrade=true flag with terraform.
@@ -203,6 +202,7 @@ func TestRunExistingResourcesInstances(t *testing.T) {
 			"region":                                region,
 			"resource_tags":                         tags,
 			"existing_secrets_manager_instance_crn": permanentResources["secretsManagerCRN"],
+			"certificate_template_name":             permanentResources["privateCertTemplateName"],
 		},
 		// Set Upgrade to true to ensure latest version of providers and modules are used by terratest.
 		// This is the same as setting the -upgrade=true flag with terraform.

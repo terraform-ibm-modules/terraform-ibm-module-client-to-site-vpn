@@ -18,6 +18,6 @@ output "resource_group_name" {
 }
 
 output "sm_private_cert_crn" {
-  value       = module.secrets_manager_private_certificate.secret_crn
+  value       = var.existing_secrets_manager_instance_crn != null ? module.secrets_manager_private_certificate[0].secret_crn : null
   description = "CRN of secrets manager private certificate."
 }

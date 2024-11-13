@@ -4,7 +4,7 @@
 
 module "landing_zone" {
   source                 = "terraform-ibm-modules/landing-zone/ibm//patterns//vpc//module"
-  version                = "6.0.0"
+  version                = "6.2.2"
   region                 = var.region
   prefix                 = var.prefix
   tags                   = var.resource_tags
@@ -21,23 +21,33 @@ module "resource_group" {
   resource_group_name = "${var.prefix}-rg"
 }
 
-module "existing_sm_crn_parser" {
-  # count   = var.existing_secrets_manager_instance_crn != null ? 1 : 0
-  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.0.0"
-  crn     = var.existing_secrets_manager_instance_crn
-}
-
 #################################################################################
 # Secrets Manager resources
 #################################################################################
 
+locals {
+  sm_region            = module.secrets_manager.secrets_manager_region
+  secrets_manager_guid = module.secrets_manager.secrets_manager_guid
+}
+
+module "secrets_manager" {
+  source                   = "terraform-ibm-modules/secrets-manager/ibm"
+  version                  = "1.18.13"
+  resource_group_id        = module.resource_group.resource_group_id
+  region                   = var.region
+  secrets_manager_name     = "${var.prefix}-secrets-manager" #tfsec:ignore:general-secrets-no-plaintext-exposure
+  sm_service_plan          = "trial"
+  sm_tags                  = var.resource_tags
+  existing_sm_instance_crn = var.existing_secrets_manager_instance_crn
+}
+
 # Create a secret group to place the certificate if provisioning a new certificate
 module "secrets_manager_group" {
+  count                    = var.existing_secrets_manager_instance_crn != null ? 1 : 0
   source                   = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
   version                  = "1.2.2"
-  region                   = module.existing_sm_crn_parser.region
-  secrets_manager_guid     = module.existing_sm_crn_parser.service_instance
+  region                   = local.sm_region
+  secrets_manager_guid     = local.secrets_manager_guid
   secret_group_name        = "${var.prefix}-cert-secret-group"
   secret_group_description = "secret group used for private certificates"
   providers = {
@@ -45,34 +55,18 @@ module "secrets_manager_group" {
   }
 }
 
-# Configure private cert engine if provisioning a new certificate
-module "private_secret_engine" {
-  source                    = "terraform-ibm-modules/secrets-manager-private-cert-engine/ibm"
-  version                   = "1.3.2"
-  secrets_manager_guid      = module.existing_sm_crn_parser.service_instance
-  region                    = module.existing_sm_crn_parser.region
-  root_ca_name              = "${var.prefix}-root-ca"
-  root_ca_common_name       = "${var.prefix}-example.com"
-  root_ca_max_ttl           = "8760h"
-  intermediate_ca_name      = "${var.prefix}-intermediat-ca"
-  certificate_template_name = "${var.prefix}-my-template"
-  providers = {
-    ibm = ibm.ibm-sm
-  }
-}
-
 # Create private certificate to use for VPN server
 module "secrets_manager_private_certificate" {
-  depends_on             = [module.private_secret_engine]
+  count                  = var.existing_secrets_manager_instance_crn != null ? 1 : 0
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
   version                = "1.3.1"
   cert_name              = "${var.prefix}-cts-vpn-private-cert"
   cert_description       = "an example private cert"
-  cert_template          = "geretain-cert-template"
-  cert_secrets_group_id  = module.secrets_manager_group.secret_group_id
+  cert_template          = var.certificate_template_name
+  cert_secrets_group_id  = module.secrets_manager_group[0].secret_group_id
   cert_common_name       = "${var.prefix}-example.com"
-  secrets_manager_guid   = module.existing_sm_crn_parser.service_instance
-  secrets_manager_region = module.existing_sm_crn_parser.region
+  secrets_manager_guid   = local.secrets_manager_guid
+  secrets_manager_region = local.sm_region
   providers = {
     ibm = ibm.ibm-sm
   }

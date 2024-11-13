@@ -37,12 +37,12 @@ variable "name" {
 
 variable "existing_secrets_manager_instance_crn" {
   type        = string
-  description = "The CRN of existing secrets manager to use to create service credential secrets."
+  description = "The CRN of existing secrets manager where the certificate to use for the VPN is stored or where the new certificate will be created."
 }
 
 variable "existing_secrets_manager_cert_crn" {
   type        = string
-  description = "The CRN of existing secrets manager private certificate to use to create VPN."
+  description = "The CRN of existing secrets manager private certificate to use to create VPN. If the value is null, then new private certificate is created."
   default     = null
 }
 
@@ -81,25 +81,25 @@ variable "certificate_template_name" {
 ##############################################################################
 
 variable "existing_subnet_names" {
-  description = "Optionally pass a list of existing subnet names (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the `var.vpn_subnet_cidr_zone_1` and `var.vpn_subnet_cidr_zone_2` variables."
+  description = "Optionally pass a list of existing subnet names (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the 'vpn_subnet_cidr_zone_1' and `vpn_subnet_cidr_zone_2` input variables."
   type        = list(string)
   default     = []
 
   validation {
-    error_message = "`var.existing_subnet_names` supports a maximum of 2 subnets."
+    error_message = "The 'existing_subnet_names' input variable supports a maximum of 2 subnets."
     condition     = (length(var.existing_subnet_names) == 0 || length(var.existing_subnet_names) < 3)
   }
 }
 
 variable "vpn_subnet_cidr_zone_1" {
   type        = string
-  description = "The CIDR range to use from the first zone in the region (or zone specified in the `var.vpn_zone_1` variable)"
+  description = "The CIDR range to use from the first zone in the region (or zone specified in the 'vpn_zone_1' input variable)"
   default     = "10.10.40.0/24"
 }
 
 variable "vpn_subnet_cidr_zone_2" {
   type        = string
-  description = "The CIDR range to use from the second zone in the region (or zone specified in the `var.vpn_zone_2` variable). If not specified, VPN will only be deployed to a single zone (standalone deployment)."
+  description = "The CIDR range to use from the second zone in the region (or zone specified in the 'vpn_zone_2' input variable). If not specified, VPN will only be deployed to a single zone (standalone deployment)."
   default     = null
 }
 
@@ -112,12 +112,12 @@ variable "vpn_client_access_group_users" {
 
 variable "access_group_name" {
   type        = string
-  description = "The name of the IAM Access Group to create if `var.create_policy` is `true`."
+  description = "The name of the IAM Access Group to create if the 'create_policy' input variable is `true`."
   default     = "client-to-site-vpn-access-group"
 }
 
 variable "create_policy" {
-  description = "Whether to create a new access group (using the value of `var.access_group_name`) with a VPN Client role."
+  description = "Whether to create a new access group (using the value of the 'access_group_name' input variable) with a VPN Client role."
   type        = bool
   default     = true
 }
@@ -145,7 +145,7 @@ variable "vpn_server_routes" {
 variable "existing_vpc_crn" {
   type        = string
   description = "(Optional) Crn of the VPC in which the VPN infrastructure will be created."
-  default     = "crn:v1:bluemix:public:is:us-south:a/abac0df06b644a9cabc6e44f55b3880e::vpc:r006-bb73fb4f-7567-4f9b-bdc7-409d157db384"
+  default     = null
 }
 
 variable "adjust_existing_vpc_acls" {
@@ -162,7 +162,7 @@ variable "vpn_zone_1" {
 
 variable "vpn_zone_2" {
   type        = string
-  description = "Optionally specify the second zone where the VPN gateway will be created. If not specified, it will default to the second zone in the region but only if you have specified a value for `var.vpn_subnet_cidr_zone_2`."
+  description = "Optionally specify the second zone where the VPN gateway will be created. If not specified, it will default to the second zone in the region but only if you have specified a value for the 'vpn_subnet_cidr_zone_2' input variable."
   default     = null
 }
 
