@@ -152,7 +152,7 @@ func TestSolutionInSchematics(t *testing.T) {
 			{Name: "cert_common_name", Value: fmt.Sprintf("%s%s", options.Prefix, ".com"), DataType: "string"},
 			{Name: "root_ca_name", Value: fmt.Sprintf("%s%s", options.Prefix, "-root-ca"), DataType: "string"},
 			{Name: "root_ca_common_name", Value: fmt.Sprintf("%s%s", options.Prefix, ".com"), DataType: "string"},
-			{Name: "intermediate_ca_name", Value: fmt.Sprintf("%s%s", options.Prefix, "-intermediat-ca"), DataType: "string"},
+			{Name: "intermediate_ca_name", Value: fmt.Sprintf("%s%s", options.Prefix, "-intermediate-ca"), DataType: "string"},
 			{Name: "certificate_template_name", Value: fmt.Sprintf("%s%s", options.Prefix, "-my-template"), DataType: "string"},
 		}
 

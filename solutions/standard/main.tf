@@ -16,12 +16,19 @@ locals {
 
   # tflint-ignore: terraform_unused_declarations
   validate_encryption_inputs = var.existing_secrets_manager_cert_crn == null && (var.cert_common_name == null || var.root_ca_name == null ||
-  var.root_ca_common_name == null || var.intermediate_ca_name == null || var.certificate_template_name == null) ? tobool("Set cert_common_name, root_ca_name, root_ca_common_name, intermediate_ca_name and certificate_template_name if existing_secrets_manager_cert_crn is not set") : true
+  var.root_ca_common_name == null || var.intermediate_ca_name == null || var.certificate_template_name == null) ? tobool("Set cert_common_name, root_ca_name, root_ca_common_name, intermediate_ca_name and certificate_template_name if a 'existing_secrets_manager_cert_crn' input variable is not set") : true
 }
 module "existing_sm_crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
   version = "1.0.0"
   crn     = var.existing_secrets_manager_instance_crn
+}
+
+module "existing_secrets_manager_cert_crn_parser" {
+  count   = var.existing_secrets_manager_cert_crn != null ? 1 : 0
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.0.0"
+  crn     = var.existing_secrets_manager_cert_crn
 }
 
 # Create a secret group to place the certificate if provisioning a new certificate
@@ -73,13 +80,6 @@ module "secrets_manager_private_certificate" {
   }
 }
 
-module "existing_secrets_manager_cert_crn_parser" {
-  count   = var.existing_secrets_manager_cert_crn != null ? 1 : 0
-  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.0.0"
-  crn     = var.existing_secrets_manager_cert_crn
-}
-
 ##############################################################################
 # Deploy client-to-site in a dedicated subnet in the VPC
 ##############################################################################
@@ -103,7 +103,7 @@ module "existing_vpc_crn_parser" {
 }
 
 data "ibm_is_vpc" "existing_vpc_data" {
-  count      = var.adjust_existing_vpc_acls && local.existing_vpc_id != null ? 1 : 0
+  count      = local.existing_vpc_id != null ? 1 : 0
   identifier = local.existing_vpc_id
 }
 
@@ -218,37 +218,37 @@ resource "ibm_is_security_group_target" "sg_target" {
 ##############################################################################
 
 locals {
-  one_subnet = [
+  one_subnet = var.adjust_existing_subnet_name != null ? [
     for subnet in data.ibm_is_vpc.existing_vpc_data[0].subnets :
     subnet if can(regex(var.adjust_existing_subnet_name, subnet.name))
-  ]
+  ] : []
 }
 
 locals {
   client_cidr = "10.0.0.0/20" # Default in client-to-site
   # tflint-ignore: terraform_unused_declarations
-  validate_adjust_inputs = var.adjust_existing_vpc_acls && (var.adjust_existing_subnet_name == null || var.adjust_network_cidr == null) ? tobool("When adjusting existing VPC acls, adjust_existing_subnet_name and adjust_network_cidr must be set") : true
+  validate_adjust_inputs = var.adjust_existing_subnet_name == null || var.adjust_network_cidr == null ? tobool("When adjusting existing VPC acls, then 'adjust_existing_subnet_name' and 'adjust_network_cidr' input variables must be set") : true
 }
 
 data "ibm_is_subnet" "one_subnet" {
-  count      = var.adjust_existing_vpc_acls ? 1 : 0
+  count      = length(local.one_subnet) > 0 ? 1 : 0
   identifier = local.one_subnet[0].id
 }
 
 data "ibm_is_network_acl_rules" "existing_inbound_rules" {
-  count       = var.adjust_existing_vpc_acls ? 1 : 0
+  count       = length(local.one_subnet) > 0 ? 1 : 0
   network_acl = data.ibm_is_subnet.one_subnet[0].network_acl
   direction   = "inbound"
 }
 
 data "ibm_is_network_acl_rules" "existing_outbound_rules" {
-  count       = var.adjust_existing_vpc_acls ? 1 : 0
+  count       = length(local.one_subnet) > 0 ? 1 : 0
   network_acl = data.ibm_is_subnet.one_subnet[0].network_acl
   direction   = "outbound"
 }
 
 resource "ibm_is_network_acl_rule" "allow_vpn_inbound" {
-  count       = var.adjust_existing_vpc_acls ? 1 : 0
+  count       = length(local.one_subnet) > 0 ? 1 : 0
   network_acl = data.ibm_is_subnet.one_subnet[0].network_acl
   before      = data.ibm_is_network_acl_rules.existing_inbound_rules[0].rules[0].rule_id
   name        = "inbound"
@@ -263,7 +263,7 @@ resource "ibm_is_network_acl_rule" "allow_vpn_inbound" {
 }
 
 resource "ibm_is_network_acl_rule" "allow_vpn_outbound" {
-  count       = var.adjust_existing_vpc_acls ? 1 : 0
+  count       = length(local.one_subnet) > 0 ? 1 : 0
   network_acl = data.ibm_is_subnet.one_subnet[0].network_acl
   before      = data.ibm_is_network_acl_rules.existing_outbound_rules[0].rules[0].rule_id
   name        = "outbound"

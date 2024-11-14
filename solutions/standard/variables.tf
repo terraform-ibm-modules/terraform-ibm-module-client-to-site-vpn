@@ -145,13 +145,6 @@ variable "vpn_server_routes" {
 variable "existing_vpc_crn" {
   type        = string
   description = "(Optional) Crn of the VPC in which the VPN infrastructure will be created."
-  default     = null
-}
-
-variable "adjust_existing_vpc_acls" {
-  type        = bool
-  description = "If true (default), module will update the existing acl to allow inbound/outbound traffic to the vpn client ips."
-  default     = true
 }
 
 variable "vpn_zone_1" {
