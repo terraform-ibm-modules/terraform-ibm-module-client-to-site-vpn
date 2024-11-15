@@ -12,6 +12,10 @@ variable "region" {
 variable "prefix" {
   type        = string
   description = "A unique identifier for resources. Must begin with a lowercase letter and end with a lowercase letter or number. This prefix will be prepended to any resources provisioned by this template."
+  validation {
+    error_message = "Prefix must begin with a lowercase letter and contain only lowercase letters, numbers, and - characters. Prefixes must end with a lowercase letter or number and be 16 or fewer characters."
+    condition     = can(regex("^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$", coalesce(var.prefix, "vpn"))) && length(coalesce(var.prefix, "vpn")) <= 16
+  }
 }
 
 variable "resource_group" {
