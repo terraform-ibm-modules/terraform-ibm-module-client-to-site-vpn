@@ -1,0 +1,4 @@
+{
+  "ibmcloud_api_key": $VALIDATION_APIKEY,
+  "cert_common_name": $DNS_CLOUD_DOMAIN
+}

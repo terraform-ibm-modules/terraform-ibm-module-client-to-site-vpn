@@ -8,9 +8,9 @@ The solution creates and configures the following infrastructure:
 2) When `existing_secrets_manager_cert_crn` input variable is not passed:
   - creates a private certificate (the "secret") from the private certificate engine in the secret group
 
-3) Creates `client-to-site-subnet-1` and `client-to-site-subnet-2` subnets in the existing VPC
+3) Creates `client-to-site-subnet-1` in the existing VPC
 
-4) The network ACL on these subnets grants the access according to the `network_acls` input variable
+4) The network ACL on these subnets grants all access from any source
 
 5) Creates a client-to-site VPN gateway
   - uses the private certificate that is generated and stored in the Secrets Manager instance

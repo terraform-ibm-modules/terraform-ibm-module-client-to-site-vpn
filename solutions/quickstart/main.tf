@@ -63,21 +63,13 @@ module "secrets_manager_private_certificate" {
 }
 
 ##############################################################################
-# Deploy client-to-site in a dedicated subnets in the VPC
+# Deploy client-to-site in a dedicated subnet in the VPC
 ##############################################################################
 locals {
   existing_vpc_id = module.existing_vpc_crn_parser.resource
-  subnet_ids      = [ibm_is_subnet.client_to_site_subnet_zone_1.id, ibm_is_subnet.client_to_site_subnet_zone_2.id]
+  subnet_ids      = [ibm_is_subnet.client_to_site_subnet_zone_1.id]
   zone_1          = var.vpn_zone_1 != null ? var.vpn_zone_1 : "${var.region}-1" # hardcode to first zone in region
-  zone_2          = var.vpn_zone_2 != null ? var.vpn_zone_2 : "${var.region}-2" # hardcode to secod zone in region
   target_ids      = [module.vpn.vpn_server_id]
-  acl_object = {
-    for network_acl in var.network_acls :
-    network_acl.name => {
-      name  = network_acl.name
-      rules = network_acl.rules,
-    }
-  }
 }
 
 module "existing_vpc_crn_parser" {
@@ -93,108 +85,32 @@ resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_1" {
   cidr = var.vpn_subnet_cidr_zone_1
 }
 
-resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_2" {
-  name = "${var.prefix}-client-to-site-address-prefixes-2"
-  zone = local.zone_2
-  vpc  = local.existing_vpc_id
-  cidr = var.vpn_subnet_cidr_zone_2
-}
-
 resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
-  for_each = local.acl_object
-  name     = each.key
-  vpc      = local.existing_vpc_id
-
-  # Create ACL rules
-  dynamic "rules" {
-    for_each = each.value.rules
-    content {
-      name        = rules.value.name
-      action      = rules.value.action
-      source      = rules.value.source
-      destination = rules.value.destination
-      direction   = rules.value.direction
-
-      dynamic "tcp" {
-        for_each = (
-          # if rules null
-          rules.value.tcp == null
-          # empty array
-          ? []
-          # otherwise check each possible field against how many of the values are
-          # equal to null and only include rules where one of the values is not null
-          # this allows for patterns to include `tcp` blocks for conversion to list
-          # while still not creating a rule. default behavior would force the rule to
-          # be included if all indiviual values are set to null
-          : length([
-            for value in ["port_min", "port_max", "source_port_min", "source_port_min"] :
-            true if lookup(rules.value["tcp"], value, null) == null
-          ]) == 4
-          ? []
-          : [rules.value]
-        )
-        content {
-          port_min        = lookup(rules.value.tcp, "port_min", null)
-          port_max        = lookup(rules.value.tcp, "port_max", null)
-          source_port_min = lookup(rules.value.tcp, "source_port_min", null)
-          source_port_max = lookup(rules.value.tcp, "source_port_max", null)
-        }
-      }
-
-      dynamic "udp" {
-        for_each = (
-          # if rules null
-          rules.value.udp == null
-          # empty array
-          ? []
-          # otherwise check each possible field against how many of the values are
-          # equal to null and only include rules where one of the values is not null
-          # this allows for patterns to include `udp` blocks for conversion to list
-          # while still not creating a rule. default behavior would force the rule to
-          # be included if all indiviual values are set to null
-          : length([
-            for value in ["port_min", "port_max", "source_port_min", "source_port_min"] :
-            true if lookup(rules.value["udp"], value, null) == null
-          ]) == 4
-          ? []
-          : [rules.value]
-        )
-        content {
-          port_min        = lookup(rules.value.udp, "port_min", null)
-          port_max        = lookup(rules.value.udp, "port_max", null)
-          source_port_min = lookup(rules.value.udp, "source_port_min", null)
-          source_port_max = lookup(rules.value.udp, "source_port_max", null)
-        }
-      }
-
-      dynamic "icmp" {
-        for_each = (
-          # if rules null
-          rules.value.icmp == null
-          # empty array
-          ? []
-          # otherwise check each possible field against how many of the values are
-          # equal to null and only include rules where one of the values is not null
-          # this allows for patterns to include `udp` blocks for conversion to list
-          # while still not creating a rule. default behavior would force the rule to
-          # be included if all indiviual values are set to null
-          : length([
-            for value in ["code", "type"] :
-            true if lookup(rules.value["icmp"], value, null) == null
-          ]) == 2
-          ? []
-          : [rules.value]
-        )
-        content {
-          type = rules.value.icmp.type
-          code = rules.value.icmp.code
-        }
-      }
+  name = "${var.prefix}-client-to-site-acl"
+  vpc  = local.existing_vpc_id
+  rules {
+    name        = "outbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    udp {
+      source_port_min = 443
+      source_port_max = 443
+    }
+  }
+  rules {
+    name        = "inbound"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    udp {
+      port_min = 443
+      port_max = 443
     }
   }
 }
-
-# input: restrict to the clients IPS () - required - maybe in descriptio u can cfeate 0.0.0 to use as it oepn
 
 resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
   depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_1]
@@ -202,16 +118,7 @@ resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
   vpc             = local.existing_vpc_id
   ipv4_cidr_block = var.vpn_subnet_cidr_zone_1
   zone            = local.zone_1
-  network_acl     = ibm_is_network_acl.client_to_site_vpn_acl[keys(local.acl_object)[0]].id
-}
-
-resource "ibm_is_subnet" "client_to_site_subnet_zone_2" {
-  depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_2]
-  name            = "${var.prefix}-client-to-site-subnet-2"
-  vpc             = local.existing_vpc_id
-  ipv4_cidr_block = var.vpn_subnet_cidr_zone_2
-  zone            = local.zone_2
-  network_acl     = ibm_is_network_acl.client_to_site_vpn_acl[keys(local.acl_object)[0]].id
+  network_acl     = ibm_is_network_acl.client_to_site_vpn_acl.id
 }
 
 module "vpn" {
@@ -242,7 +149,11 @@ module "client_to_site_sg" {
   vpc_id                       = local.existing_vpc_id
   resource_group               = module.resource_group.resource_group_id
   security_group_name          = "${var.prefix}-client-to-site-sg"
-  security_group_rules         = var.security_group_rules
+  security_group_rules = [{
+    name      = "allow-all-inbound"
+    direction = "inbound"
+    remote    = "0.0.0.0/0"
+  }]
 }
 
 # we add security group target after VPN and client_to_site_sg are created. Otherwise cycle dependency error is thrown

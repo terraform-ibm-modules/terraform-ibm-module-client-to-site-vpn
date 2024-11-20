@@ -28,7 +28,7 @@ variable "use_existing_resource_group" {
 variable "name" {
   type        = string
   description = "The name of the VPN."
-  default     = "vpn"
+  default     = "cts-vpn"
 }
 
 ##############################################################################
@@ -46,27 +46,15 @@ variable "existing_secrets_manager_cert_crn" {
   default     = null
 }
 
+variable "existing_secrets_manager_secret_group_id" {
+  type        = string
+  description = "The CRN of existing secrets manager secret group id used for new created certificate. If the value is null, then new secrets manager secret group is created."
+  default     = null
+}
+
 variable "cert_common_name" {
   type        = string
   description = "A fully qualified domain name or host domain name for the certificate to be created.  Only used when `existing_secrets_manager_cert_crn` is `null`."
-  default     = null
-}
-
-variable "root_ca_name" {
-  type        = string
-  description = "The name of the Root CA to create for a private_cert secret engine. Only used when `existing_secrets_manager_cert_crn` is `null`."
-  default     = null
-}
-
-variable "root_ca_common_name" {
-  type        = string
-  description = "A fully qualified domain name or host domain name for the certificate to be created.  Only used when `existing_secrets_manager_cert_crn` is `null`."
-  default     = null
-}
-
-variable "intermediate_ca_name" {
-  type        = string
-  description = "The name of the Intermediate CA to create for a private_cert secret engine. Only used when `existing_secrets_manager_cert_crn` is `null`."
   default     = null
 }
 
@@ -80,17 +68,6 @@ variable "certificate_template_name" {
 # client-to-site VPN
 ##############################################################################
 
-variable "existing_subnet_names" {
-  description = "Optionally pass a list of existing subnet names (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the 'vpn_subnet_cidr_zone_1' and `vpn_subnet_cidr_zone_2` input variables."
-  type        = list(string)
-  default     = []
-
-  validation {
-    error_message = "The 'existing_subnet_names' input variable supports a maximum of 2 subnets."
-    condition     = (length(var.existing_subnet_names) == 0 || length(var.existing_subnet_names) < 3)
-  }
-}
-
 variable "vpn_subnet_cidr_zone_1" {
   type        = string
   description = "The CIDR range to use from the first zone in the region (or zone specified in the 'vpn_zone_1' input variable)"
@@ -99,10 +76,169 @@ variable "vpn_subnet_cidr_zone_1" {
 
 variable "vpn_subnet_cidr_zone_2" {
   type        = string
-  description = "The CIDR range to use from the second zone in the region (or zone specified in the 'vpn_zone_2' input variable). If not specified, VPN will only be deployed to a single zone (standalone deployment)."
-  default     = null
+  description = "The CIDR range to use from the second zone in the region (or zone specified in the 'vpn_zone_2' input variable)."
+  default     = "10.10.80.0/24"
 }
 
+variable "network_acls" {
+  description = "The list of ACLs to create. Provide at least one rule for each ACL."
+  type = list(
+    object({
+      name = string
+      rules = list(
+        object({
+          name        = string
+          action      = string
+          destination = string
+          direction   = string
+          source      = string
+          tcp = optional(
+            object({
+              port_max        = optional(number)
+              port_min        = optional(number)
+              source_port_max = optional(number)
+              source_port_min = optional(number)
+            })
+          )
+          udp = optional(
+            object({
+              port_max        = optional(number)
+              port_min        = optional(number)
+              source_port_max = optional(number)
+              source_port_min = optional(number)
+            })
+          )
+          icmp = optional(
+            object({
+              type = optional(number)
+              code = optional(number)
+            })
+          )
+        })
+      )
+    })
+  )
+
+  validation {
+    error_message = "ACL rule actions can only be `allow` or `deny`."
+    condition = length(distinct(
+      flatten([
+        # Check through rules
+        for rule in flatten([var.network_acls[*].rules]) :
+        # Return false action is not valid
+        false if !contains(["allow", "deny"], rule.action)
+      ])
+    )) == 0
+  }
+
+  validation {
+    error_message = "ACL rule actions can only be `allow` or `deny`."
+    condition = length(distinct(
+      flatten([
+        # Check through rules
+        for rule in flatten([var.network_acls[*].rules]) :
+        # Return false action is not valid
+        false if !contains(["allow", "deny"], rule.action)
+      ])
+    )) == 0
+  }
+
+  validation {
+    error_message = "ACL rule direction can only be `inbound` or `outbound`."
+    condition = length(distinct(
+      flatten([
+        # Check through rules
+        for rule in flatten([var.network_acls[*].rules]) :
+        # Return false if direction is not valid
+        false if !contains(["inbound", "outbound"], rule.direction)
+      ])
+    )) == 0
+  }
+
+  validation {
+    error_message = "ACL rule names must match the regex pattern ^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$."
+    condition = length(distinct(
+      flatten([
+        # Check through rules
+        for rule in flatten([var.network_acls[*].rules]) :
+        # Return false if direction is not valid
+        false if !can(regex("^([a-z]|[a-z][-a-z0-9]*[a-z0-9])$", rule.name))
+      ])
+    )) == 0
+  }
+
+}
+
+variable "security_group_rules" {
+  description = "A list of security group rules to be added to the default vpc security group"
+  type = list(
+    object({
+      name      = string
+      direction = optional(string, "inbound")
+      remote    = string
+      tcp = optional(
+        object({
+          port_max = optional(number)
+          port_min = optional(number)
+        })
+      )
+      udp = optional(
+        object({
+          port_max = optional(number)
+          port_min = optional(number)
+        })
+      )
+      icmp = optional(
+        object({
+          type = optional(number)
+          code = optional(number)
+        })
+      )
+    })
+  )
+
+  validation {
+    error_message = "Security group rule direction can only be `inbound` or `outbound`."
+    condition = (var.security_group_rules == null || length(var.security_group_rules) == 0) ? true : length(distinct(
+      flatten([
+        # Check through rules
+        for rule in var.security_group_rules :
+        # Return false if direction is not valid
+        false if !contains(["inbound", "outbound"], rule.direction)
+      ])
+    )) == 0
+  }
+
+  validation {
+    error_message = "Security group rule names must match the regex pattern ^([a-z]|[a-z][-a-z0-9_]*[a-z0-9])$."
+    condition = (var.security_group_rules == null || length(var.security_group_rules) == 0) ? true : length(distinct(
+      flatten([
+        # Check through rules
+        for rule in var.security_group_rules :
+        # Return false if direction is not valid
+        false if !can(regex("^([a-z]|[a-z][-a-z0-9_]*[a-z0-9])$", rule.name))
+      ])
+    )) == 0
+  }
+
+  validation {
+    error_message = "Security group rules can only have one of `icmp`, `udp`, or `tcp`."
+    condition = (var.security_group_rules == null || length(var.security_group_rules) == 0) ? true : length(distinct(
+      # Get flat list of results
+      flatten([
+        # Check through rules
+        for rule in var.security_group_rules :
+        # Return true if there is more than one of `icmp`, `udp`, or `tcp`
+        true if length(
+          [
+            for type in ["tcp", "udp", "icmp"] :
+            true if rule[type] != null
+          ]
+        ) > 1
+      ])
+    )) == 0 # Checks for length. If all fields all correct, array will be empty
+  }
+}
 
 variable "vpn_client_access_group_users" {
   description = "The list of users in the Client to Site VPN Access Group"
@@ -121,7 +257,6 @@ variable "create_policy" {
   type        = bool
   default     = true
 }
-
 
 variable "vpn_server_routes" {
   type = map(object({
@@ -144,7 +279,7 @@ variable "vpn_server_routes" {
 
 variable "existing_vpc_crn" {
   type        = string
-  description = "(Optional) Crn of the VPC in which the VPN infrastructure will be created."
+  description = "Crn of the VPC in which the VPN infrastructure will be created."
 }
 
 variable "vpn_zone_1" {
@@ -157,16 +292,4 @@ variable "vpn_zone_2" {
   type        = string
   description = "Optionally specify the second zone where the VPN gateway will be created. If not specified, it will default to the second zone in the region but only if you have specified a value for the 'vpn_subnet_cidr_zone_2' input variable."
   default     = null
-}
-
-variable "adjust_existing_subnet_name" {
-  type        = string
-  description = "The name of existing VPC subnet which will have updated acl to allow inbound/outbound traffic to the vpn client ips. Default value of landing zone VPN subnet is 'vpn-zone-1'"
-  default     = "vpn-zone-1"
-}
-
-variable "adjust_network_cidr" {
-  type        = string
-  description = "The network CIDR which will be adjusted to o allow inbound/outbound traffic to the vpn client ips. Default value of the landing zone network CIDR is '10.0.0.0/8'"
-  default     = "10.0.0.0/8"
 }
