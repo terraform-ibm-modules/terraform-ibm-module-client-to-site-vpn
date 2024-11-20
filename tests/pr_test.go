@@ -249,7 +249,7 @@ func TestStandardSolutionInSchematics(t *testing.T) {
 			{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 			{Name: "existing_vpc_crn", Value: terraform.Output(t, existingTerraformOptions, "management_vpc_crn"), DataType: "string"},
 			{Name: "cert_common_name", Value: fmt.Sprintf("%s%s", options.Prefix, ".com"), DataType: "string"},
-			{Name: "certificate_template_name", Value: fmt.Sprintf("%s%s", options.Prefix, "-my-template"), DataType: "string"},
+			{Name: "certificate_template_name", Value: permanentResources["privateCertTemplateName"], DataType: "string"},
 			{Name: "network_acls", Value: network_acls, DataType: "list(object)"},
 			{Name: "security_group_rules", Value: security_group_rules, DataType: "list(object)"},
 		}

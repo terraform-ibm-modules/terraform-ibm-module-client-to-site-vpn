@@ -71,7 +71,7 @@ variable "existing_secrets_manager_secret_group_id" {
 variable "vpn_subnet_cidr_zone_1" {
   type        = string
   description = "The CIDR range to use from the first zone in the region (or zone specified in the 'vpn_zone_1' input variable)"
-  default     = "10.10.20.0/24"
+  default     = "10.10.40.0/24"
 }
 
 variable "vpn_client_access_group_users" {
