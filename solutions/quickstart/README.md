@@ -1,21 +1,13 @@
-# Client-To-Site VPN solution
+# Quickstart client to site VPN solution
 
-The solution creates and configures the following infrastructure:
+This solution supports provisioning and configuring the following infrastructure:
 
-1) When `existing_secrets_manager_secret_group_id` input variable is not passed:
-    - creates a secrets manager secret group
+- A resource group, if one is not passed in.
+- A secrets manager secret group, if one is not passed in.
+- A private certificate, if one is not passed in.
+- `client-to-site-subnet-1` subnet in the existing VPC.
+- A network ACL on `client-to-site-subnet-1` subnet grants all access from any source.
+- Security group that allows all incoming requests from any source.
+- A client to site VPN gateway
 
-2) When `existing_secrets_manager_cert_crn` input variable is not passed:
-    - creates a private certificate (the "secret") from the private certificate engine in the secret group
-
-3) Creates `client-to-site-subnet-1` in the existing VPC
-
-4) Creates the `client-to-site-sg` security group that allows all incoming requests from any source.
-
-5) The network ACL on `client-to-site-subnet-1` subnet grants all access from any source
-
-6) Creates a client-to-site VPN gateway
-    - uses the private certificate that is generated and stored in the Secrets Manager instance
-    - locates the gateway in the `client-to-site-subnet-1` subnet
-    - attaches the `client-to-site-sg` security group to the client-to-site VPN gateway
-    - configures routes to allow access to the landing zone VPC
+**Important:** Because this solution contains a provider configuration and is not compatible with the `for_each`, `count`, and `depends_on` arguments, do not call this solution from one or more other modules. For more information about how resources are associated with provider configurations with multiple modules, see [Providers Within Modules](https://developer.hashicorp.com/terraform/language/modules/develop/providers).
