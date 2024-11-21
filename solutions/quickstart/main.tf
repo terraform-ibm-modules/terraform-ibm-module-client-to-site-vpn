@@ -79,14 +79,14 @@ module "existing_vpc_crn_parser" {
 }
 
 resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_1" {
-  name = "${var.prefix}-client-to-site-address-prefixes-1"
+  name = var.prefix != null ? "${var.prefix}-client-to-site-address-prefixes-1" : "client-to-site-address-prefixes-1"
   zone = local.zone_1
   vpc  = local.existing_vpc_id
   cidr = var.vpn_subnet_cidr_zone_1
 }
 
 resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
-  name = "${var.prefix}-client-to-site-acl"
+  name = var.prefix != null ? "${var.prefix}-client-to-site-acl" : "client-to-site-acl"
   vpc  = local.existing_vpc_id
   rules {
     name        = "outbound"
@@ -114,7 +114,7 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
 
 resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
   depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_1]
-  name            = "${var.prefix}-client-to-site-subnet-1"
+  name            = var.prefix != null ? "${var.prefix}-client-to-site-subnet-1" : "client-to-site-subnet-1"
   vpc             = local.existing_vpc_id
   ipv4_cidr_block = var.vpn_subnet_cidr_zone_1
   zone            = local.zone_1
@@ -130,7 +130,7 @@ module "vpn" {
   subnet_ids                    = local.subnet_ids
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
-  access_group_name             = "${var.prefix}-${var.access_group_name}"
+  access_group_name             = var.prefix != null ? "${var.prefix}-${var.access_group_name}" : var.access_group_name
   secrets_manager_id            = module.existing_sm_crn_parser.service_instance
   vpn_server_routes             = var.vpn_server_routes
 }
@@ -148,7 +148,7 @@ module "client_to_site_sg" {
   add_ibm_cloud_internal_rules = true
   vpc_id                       = local.existing_vpc_id
   resource_group               = module.resource_group.resource_group_id
-  security_group_name          = "${var.prefix}-client-to-site-sg"
+  security_group_name          = var.prefix != null ? "${var.prefix}-client-to-site-sg" : "client-to-site-sg"
   security_group_rules = [{
     name      = "allow-all-inbound"
     direction = "inbound"

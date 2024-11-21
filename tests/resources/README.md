@@ -1,1 +1,6 @@
-The terraform code in this directory is used by the tests to provision a landing zone VPC which is required by the landing-zone example.
+The terraform code in this directory is used by the tests to provision:
+- landing zone VPC
+- when `existing_secrets_manager_instance_crn` input variable is not passed:
+    - Secrets manager instance
+    - Secrets manager group
+    - Secrets manager private certificate
