@@ -92,7 +92,7 @@ func TestRunHAUpgrade(t *testing.T) {
 func TestQuickstartSolutionInSchematics(t *testing.T) {
 	t.Parallel()
 	// ------------------------------------------------------------------------------------------------------
-	// Deploy SLZ VPC
+	// Create SLZ VPC, SM private cert, resource group first
 	// ------------------------------------------------------------------------------------------------------
 
 	prefix := fmt.Sprintf("cts-qs-%s", strings.ToLower(random.UniqueId()))
@@ -153,6 +153,7 @@ func TestQuickstartSolutionInSchematics(t *testing.T) {
 			{Name: "existing_secrets_manager_instance_crn", Value: permanentResources["secretsManagerCRN"], DataType: "string"},
 			{Name: "existing_vpc_crn", Value: terraform.Output(t, existingTerraformOptions, "management_vpc_crn"), DataType: "string"},
 			{Name: "existing_secrets_manager_cert_crn", Value: terraform.Output(t, existingTerraformOptions, "sm_private_cert_crn"), DataType: "string"},
+			{Name: "provider_visibility", Value: "public", DataType: "string"},
 		}
 
 		err := options.RunSchematicTest()
@@ -175,7 +176,7 @@ func TestQuickstartSolutionInSchematics(t *testing.T) {
 func TestStandardSolutionInSchematics(t *testing.T) {
 	t.Parallel()
 	// ------------------------------------------------------------------------------------------------------
-	// Deploy SLZ VPC
+	// Create SLZ VPC, SM instance, engine, private cert, resource group first
 	// ------------------------------------------------------------------------------------------------------
 
 	prefix := fmt.Sprintf("cts-%s", strings.ToLower(random.UniqueId()))
@@ -252,6 +253,7 @@ func TestStandardSolutionInSchematics(t *testing.T) {
 			{Name: "certificate_template_name", Value: permanentResources["privateCertTemplateName"], DataType: "string"},
 			{Name: "network_acls", Value: network_acls, DataType: "list(object)"},
 			{Name: "security_group_rules", Value: security_group_rules, DataType: "list(object)"},
+			{Name: "provider_visibility", Value: "public", DataType: "string"},
 		}
 
 		err = options.RunSchematicTest()
@@ -314,7 +316,7 @@ func TestStandardSolutionExistingResources(t *testing.T) {
 	} else {
 
 		// ------------------------------------------------------------------------------------
-		// Deploy VPC solution
+		// Deploy VPN solution
 		// ------------------------------------------------------------------------------------
 		var network_acls_json_array = "[{\"name\":\"vpc-acl-2\",\"rules\":[{\"action\":\"allow\",\"destination\":\"0.0.0.0/0\",\"direction\":\"inbound\",\"name\":\"allow-all-443-inbound\",\"source\":\"0.0.0.0/0\",\"tcp\":{\"port_max\":443,\"port_min\":443,\"source_port_max\":65535,\"source_port_min\":1024}},{\"action\":\"allow\",\"destination\":\"0.0.0.0/0\",\"direction\":\"outbound\",\"name\":\"allow-all-443-outbound\",\"source\":\"0.0.0.0/0\",\"tcp\":{\"port_max\":65535,\"port_min\":1024,\"source_port_max\":443,\"source_port_min\":443}}]},{\"name\":\"vpc-acl\",\"rules\":[{\"action\":\"allow\",\"destination\":\"0.0.0.0/0\",\"direction\":\"inbound\",\"name\":\"allow-all-443-inbound\",\"source\":\"0.0.0.0/0\",\"udp\":{\"port_max\":443,\"port_min\":443}},{\"action\":\"allow\",\"destination\":\"0.0.0.0/0\",\"direction\":\"outbound\",\"name\":\"allow-all-443-outbound\",\"source\":\"0.0.0.0/0\",\"udp\":{\"source_port_max\":443,\"source_port_min\":443}}]}]"
 		var network_acls []map[string]interface{}
@@ -345,6 +347,7 @@ func TestStandardSolutionExistingResources(t *testing.T) {
 				"existing_secrets_manager_instance_crn": permanentResources["secretsManagerCRN"],
 				"network_acls":                          network_acls,
 				"security_group_rules":                  security_group_rules,
+				"provider_visibility":                   "public",
 			},
 		})
 
