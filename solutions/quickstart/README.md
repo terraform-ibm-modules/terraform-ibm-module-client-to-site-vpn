@@ -10,4 +10,6 @@ This solution supports provisioning and configuring the following infrastructure
 - Security group that allows all incoming requests from any source.
 - A client to site VPN gateway
 
+![quickstart-da](../../reference-architecture/reference-architectures/cts-quickstart-da.svg.svg)
+
 **Important:** Because this solution contains a provider configuration and is not compatible with the `for_each`, `count`, and `depends_on` arguments, do not call this solution from one or more other modules. For more information about how resources are associated with provider configurations with multiple modules, see [Providers Within Modules](https://developer.hashicorp.com/terraform/language/modules/develop/providers).
