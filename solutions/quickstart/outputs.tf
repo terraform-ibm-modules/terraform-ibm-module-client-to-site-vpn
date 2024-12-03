@@ -14,7 +14,7 @@ output "resource_group_id" {
 
 output "vpn_server_cert_id" {
   description = "ID of the server cert stored in the Secrets Manager"
-  value       = var.existing_secrets_manager_cert_crn == null ? module.secrets_manager_private_certificate[0].secret_id : module.existing_secrets_manager_cert_crn_parser[0].service_instance
+  value       = module.secrets_manager_private_certificate.secret_id
 }
 
 output "vpn_server_certificate_secret_crn" {

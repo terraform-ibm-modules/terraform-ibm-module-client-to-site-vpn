@@ -4,7 +4,7 @@
 
 output "prefix" {
   value       = module.landing_zone.prefix
-  description = "prefix"
+  description = "The prefix appended to all resources that this solution created"
 }
 
 output "management_vpc_crn" {
@@ -19,5 +19,5 @@ output "resource_group_name" {
 
 output "sm_private_cert_crn" {
   value       = var.existing_secrets_manager_instance_crn != null ? module.secrets_manager_private_certificate[0].secret_crn : null
-  description = "CRN of secrets manager private certificate."
+  description = "CRN of secrets manager private certificate"
 }

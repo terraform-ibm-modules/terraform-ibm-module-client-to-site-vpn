@@ -12,28 +12,18 @@ module "resource_group" {
 # Secrets Manager resources
 ########################################################################################################################
 locals {
-  secrets_manager_cert_crn        = var.existing_secrets_manager_cert_crn != null ? var.existing_secrets_manager_cert_crn : module.secrets_manager_private_certificate[0].secret_crn
-  secrets_manager_secret_group_id = var.existing_secrets_manager_cert_crn != null ? null : var.existing_secrets_manager_secret_group_id != null ? var.existing_secrets_manager_secret_group_id : module.secrets_manager_secret_group[0].secret_group_id
-
-  # tflint-ignore: terraform_unused_declarations
-  validate_encryption_inputs = var.existing_secrets_manager_cert_crn == null && (var.cert_common_name == null || var.certificate_template_name == null) ? tobool("Set cert_common_name and certificate_template_name input variables if a 'existing_secrets_manager_cert_crn' input variable is not set") : true
+  secrets_manager_cert_crn        = module.secrets_manager_private_certificate.secret_crn
+  secrets_manager_secret_group_id = module.secrets_manager_secret_group.secret_group_id
 }
+
 module "existing_sm_crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
   version = "1.0.0"
   crn     = var.existing_secrets_manager_instance_crn
 }
 
-module "existing_secrets_manager_cert_crn_parser" {
-  count   = var.existing_secrets_manager_cert_crn != null ? 1 : 0
-  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.0.0"
-  crn     = var.existing_secrets_manager_cert_crn
-}
-
 # Create a secret group to place the certificate if provisioning a new certificate
 module "secrets_manager_secret_group" {
-  count                    = var.existing_secrets_manager_cert_crn == null && var.existing_secrets_manager_secret_group_id == null ? 1 : 0
   source                   = "terraform-ibm-modules/secrets-manager-secret-group/ibm"
   version                  = "1.2.2"
   region                   = module.existing_sm_crn_parser.region
@@ -47,7 +37,6 @@ module "secrets_manager_secret_group" {
 
 # Create private certificate to use for VPN server
 module "secrets_manager_private_certificate" {
-  count                  = var.existing_secrets_manager_cert_crn == null ? 1 : 0
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
   version                = "1.3.1"
   cert_name              = var.prefix != null ? "${var.prefix}-cts-vpn-private-cert" : "cts-vpn-private-cert"
@@ -68,8 +57,19 @@ module "secrets_manager_private_certificate" {
 locals {
   existing_vpc_id = module.existing_vpc_crn_parser.resource
   subnet_ids      = [ibm_is_subnet.client_to_site_subnet_zone_1.id]
-  zone_1          = var.vpn_zone_1 != null ? var.vpn_zone_1 : "${var.region}-1" # hardcode to first zone in region
+  zone_1          = "${var.region}-1" # hardcode to first zone in region
   target_ids      = [module.vpn.vpn_server_id]
+  vpn_server_routes = {
+    "vpc-10" = {
+      destination = "10.0.0.0/8"
+      action      = "deliver"
+    },
+    # Add route for PaaS IBM Cloud backbone. This is mostly used to give access to the Kube master endpoints.
+    "vpc-166" = {
+      destination = "166.8.0.0/14"
+      action      = "deliver"
+    }
+  }
 }
 
 module "existing_vpc_crn_parser" {
@@ -128,11 +128,11 @@ module "vpn" {
   vpn_gateway_name              = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
   resource_group_id             = module.resource_group.resource_group_id
   subnet_ids                    = local.subnet_ids
-  create_policy                 = var.create_policy
+  create_policy                 = true
   vpn_client_access_group_users = var.vpn_client_access_group_users
-  access_group_name             = var.prefix != null ? "${var.prefix}-${var.access_group_name}" : var.access_group_name
+  access_group_name             = var.prefix != null ? "${var.prefix}-client-to-site-vpn-access-group" : "client-to-site-vpn-access-group"
   secrets_manager_id            = module.existing_sm_crn_parser.service_instance
-  vpn_server_routes             = var.vpn_server_routes
+  vpn_server_routes             = local.vpn_server_routes
 }
 
 # workaround for https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/issues/45
@@ -161,4 +161,21 @@ resource "ibm_is_security_group_target" "sg_target" {
   count          = length([module.vpn.vpn_server_id])
   security_group = module.client_to_site_sg.security_group_id
   target         = local.target_ids[count.index]
+}
+
+
+# Configure private cert engine if provisioning a new certificate
+module "private_secret_engine" {
+  source                    = "terraform-ibm-modules/secrets-manager-private-cert-engine/ibm"
+  version                   = "1.3.2"
+  secrets_manager_guid      = module.existing_sm_crn_parser.service_instance
+  region                    = module.existing_sm_crn_parser.region
+  root_ca_name              = "root-ca"
+  root_ca_common_name       = "test.com"
+  root_ca_max_ttl           = "8760h"
+  intermediate_ca_name      = "intermediate-ca"
+  certificate_template_name = "my-template"
+  providers = {
+    ibm = ibm.ibm-sm
+  }
 }

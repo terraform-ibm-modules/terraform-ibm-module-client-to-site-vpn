@@ -5,6 +5,6 @@ provider "ibm" {
 
 provider "ibm" {
   ibmcloud_api_key = var.ibmcloud_api_key
-  region           = module.secrets_manager.secrets_manager_region
+  region           = local.sm_region
   alias            = "ibm-sm"
 }

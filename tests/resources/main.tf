@@ -26,19 +26,15 @@ module "resource_group" {
 #################################################################################
 
 locals {
-  sm_region            = module.secrets_manager.secrets_manager_region
-  secrets_manager_guid = module.secrets_manager.secrets_manager_guid
+  sm_region            = var.existing_secrets_manager_instance_crn != null ? module.existing_sm_crn_parser[0].region : null
+  secrets_manager_guid = var.existing_secrets_manager_instance_crn != null ? module.existing_sm_crn_parser[0].service_instance : null
 }
 
-module "secrets_manager" {
-  source                   = "terraform-ibm-modules/secrets-manager/ibm"
-  version                  = "1.18.13"
-  resource_group_id        = module.resource_group.resource_group_id
-  region                   = var.region
-  secrets_manager_name     = "${var.prefix}-secrets-manager" #tfsec:ignore:general-secrets-no-plaintext-exposure
-  sm_service_plan          = "trial"
-  sm_tags                  = var.resource_tags
-  existing_sm_instance_crn = var.existing_secrets_manager_instance_crn
+module "existing_sm_crn_parser" {
+  count   = var.existing_secrets_manager_instance_crn != null ? 1 : 0
+  source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
+  version = "1.0.0"
+  crn     = var.existing_secrets_manager_instance_crn
 }
 
 # Create a secret group to place the certificate if provisioning a new certificate

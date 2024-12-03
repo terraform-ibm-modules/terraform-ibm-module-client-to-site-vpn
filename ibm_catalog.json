@@ -254,6 +254,15 @@
               "name": "deploy-arch-ibm-slz-vsi",
               "version": ">=1.0.0",
               "optional": true
+            },
+            {
+              "flavors": [
+                "standard"
+              ],
+              "id": "6d6ebc76-7bbd-42f5-8bc7-78f4fabd5944-global",
+              "name": "deploy-arch-ibm-secrets-manager",
+              "version": ">=1.0.0",
+              "optional": false
             }
           ],
           "configuration": [
