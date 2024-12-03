@@ -3,6 +3,5 @@
   "existing_secrets_manager_instance_crn": $SM_CRN,
   "certificate_template_name": $PRIVATE_CERT_TEMPLATE_NAME,
   "cert_common_name": $DNS_CLOUD_DOMAIN,
-  "provider_visibility": "public",
-  "vpn_subnet_cidr_zone_1": "10.10.40.0/24"
+  "provider_visibility": "public"
 }

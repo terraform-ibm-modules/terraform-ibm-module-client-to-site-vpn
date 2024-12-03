@@ -4,11 +4,6 @@ variable "ibmcloud_api_key" {
   sensitive   = true
 }
 
-variable "region" {
-  type        = string
-  description = "The region where the resources are created."
-}
-
 variable "prefix" {
   type        = string
   description = "Optional. The prefix to append to all resources that this solution creates. Must begin with a letter and contain only lowercase letters, numbers, and - characters."
@@ -59,12 +54,6 @@ variable "certificate_template_name" {
 ##############################################################################
 # client-to-site VPN
 ##############################################################################
-
-variable "vpn_subnet_cidr_zone_1" {
-  type        = string
-  description = "The CIDR range to use from the first zone in the region (or zone specified in the 'vpn_zone_1' input variable)"
-  default     = "10.10.40.0/24"
-}
 
 variable "vpn_client_access_group_users" {
   description = "The list of users in the Client to Site VPN Access Group"

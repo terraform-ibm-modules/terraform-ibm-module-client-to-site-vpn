@@ -55,9 +55,10 @@ module "secrets_manager_private_certificate" {
 # Deploy client-to-site in a dedicated subnet in the VPC
 ##############################################################################
 locals {
+  vpc_region      = module.existing_vpc_crn_parser.region
   existing_vpc_id = module.existing_vpc_crn_parser.resource
   subnet_ids      = [ibm_is_subnet.client_to_site_subnet_zone_1.id]
-  zone_1          = "${var.region}-1" # hardcode to first zone in region
+  zone_1          = "${local.vpc_region}-1" # hardcode to first zone in region
   target_ids      = [module.vpn.vpn_server_id]
   vpn_server_routes = {
     "vpc-10" = {
@@ -82,7 +83,7 @@ resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_1" {
   name = var.prefix != null ? "${var.prefix}-client-to-site-address-prefixes-1" : "client-to-site-address-prefixes-1"
   zone = local.zone_1
   vpc  = local.existing_vpc_id
-  cidr = var.vpn_subnet_cidr_zone_1
+  cidr = "10.10.40.0/24"
 }
 
 resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
@@ -116,7 +117,7 @@ resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
   depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_1]
   name            = var.prefix != null ? "${var.prefix}-client-to-site-subnet-1" : "client-to-site-subnet-1"
   vpc             = local.existing_vpc_id
-  ipv4_cidr_block = var.vpn_subnet_cidr_zone_1
+  ipv4_cidr_block = "10.10.40.0/24"
   zone            = local.zone_1
   network_acl     = ibm_is_network_acl.client_to_site_vpn_acl.id
 }
