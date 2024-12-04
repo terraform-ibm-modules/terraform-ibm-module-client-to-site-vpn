@@ -11,7 +11,7 @@ variable "prefix" {
 
   validation {
     error_message = "Prefix must begin with a letter and contain only lowercase letters, numbers, and - characters."
-    condition     = can(regex("^([A-z]|[a-z][-a-z0-9]*[a-z0-9])$", var.prefix))
+    condition     = var.prefix == null ? true : can(regex("^([A-z]|[a-z][-a-z0-9]*[a-z0-9])$", var.prefix))
   }
 }
 

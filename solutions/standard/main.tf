@@ -66,6 +66,9 @@ module "secrets_manager_private_certificate" {
 # Deploy client-to-site in a dedicated subnets in the VPC
 ##############################################################################
 locals {
+  # tflint-ignore: terraform_unused_declarations
+  validate_existing_subnet_ids_inputs = length(var.existing_subnet_ids) <= 0 && (var.vpn_subnet_cidr_zone_1 == null || var.vpn_subnet_cidr_zone_2 == null || var.remote_cidr == null) ? tobool("Set 'vpn_subnet_cidr_zone_1', 'vpn_subnet_cidr_zone_2' and 'remote_cidr input variables' if 'existing_subnet_ids' input variable is not set") : true
+
   vpc_region      = module.existing_vpc_crn_parser.region
   existing_vpc_id = module.existing_vpc_crn_parser.resource
   subnet_ids      = length(var.existing_subnet_ids) > 0 ? var.existing_subnet_ids : [ibm_is_subnet.client_to_site_subnet_zone_1[0].id, ibm_is_subnet.client_to_site_subnet_zone_2[0].id]

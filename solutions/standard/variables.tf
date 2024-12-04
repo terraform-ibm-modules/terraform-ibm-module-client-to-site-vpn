@@ -11,7 +11,7 @@ variable "prefix" {
 
   validation {
     error_message = "Prefix must begin with a letter and contain only lowercase letters, numbers, and - characters."
-    condition     = can(regex("^([A-z]|[a-z][-a-z0-9]*[a-z0-9])$", var.prefix))
+    condition     = var.prefix == null ? true : can(regex("^([A-z]|[a-z][-a-z0-9]*[a-z0-9])$", var.prefix))
   }
 }
 
@@ -71,22 +71,25 @@ variable "certificate_template_name" {
 
 variable "vpn_subnet_cidr_zone_1" {
   type        = string
-  description = "The CIDR range to use for subnet creation from the first zone in the region (or zone specified in the 'vpn_zone_1' input variable). Ensure it's not conflicting with any existing subnets."
+  description = "The CIDR range to use for subnet creation from the first zone in the region (or zone specified in the 'vpn_zone_1' input variable). Ensure it's not conflicting with any existing subnets. Must be set if 'existing_subnet_ids' input variable is not set."
+  default     = null
 }
 
 variable "vpn_subnet_cidr_zone_2" {
   type        = string
-  description = "The CIDR range to use for subnet creation from the second zone in the region (or zone specified in the 'vpn_zone_2' input variable). Ensure it's not conflicting with any existing subnets."
+  description = "The CIDR range to use for subnet creation from the second zone in the region (or zone specified in the 'vpn_zone_2' input variable). Ensure it's not conflicting with any existing subnets. Must be set if 'existing_subnet_ids' input variable is not set."
+  default     = null
 }
 
 variable "remote_cidr" {
   type        = string
-  description = "The source CIDR block to use for creating ACL rule and security group (if add_security_group input variable is set to true)."
+  description = "The source CIDR block to use for creating ACL rule and security group (if add_security_group input variable is set to true). Must be set if 'existing_subnet_ids' input variable is not set."
+  default     = null
 }
 
 variable "add_security_group" {
   type        = bool
-  description = "Add security group to created VPN?"
+  description = "Add security group to a new VPN?"
   default     = true
 }
 
@@ -110,7 +113,9 @@ variable "create_policy" {
 
 variable "vpn_server_routes" {
   type        = list(string)
-  description = "A map of server routes to be added to created VPN server."
+  description = "A map of server routes to be added to created VPN server. By default the route (166.8.0.0/14) for PaaS IBM Cloud backbone is added (mostly used to give access to the Kube master endpoints)."
+  default     = []
+  nullable    = false
 }
 
 variable "existing_vpc_crn" {
@@ -126,15 +131,15 @@ variable "vpn_zone_1" {
 
 variable "vpn_zone_2" {
   type        = string
-  description = "Optionally specify the second zone where the VPN gateway will be created. If not specified, it will default to the second zone in the region but only if you have specified a value for the 'vpn_subnet_cidr_zone_2' input variable."
+  description = "Optionally specify the second zone where the VPN gateway will be created. If not specified, it will default to the second zone in the region."
   default     = null
 }
 
 variable "existing_subnet_ids" {
   type        = list(string)
   description = "Optionally pass a list of existing subnet ids (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the 'vpn_subnet_cidr_zone_1' and 'vpn_subnet_cidr_zone_2' input variables."
-
-  default = []
+  nullable    = false
+  default     = []
 
   validation {
     error_message = "The existing_subnet_ids input variable supports a maximum of 2 subnets."
