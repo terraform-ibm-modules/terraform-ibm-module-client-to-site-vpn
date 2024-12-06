@@ -8,7 +8,7 @@ This solution supports provisioning and configuring the following infrastructure
 - `client-to-site-subnet-1` subnet in the existing VPC.
 - A network ACL on `client-to-site-subnet-1` subnet grants all access from any source.
 - Security group that allows all incoming requests from any source.
-- A client to site VPN gateway
+- A client to site VPN gateway.
 
 ![cts-quickstart-da](../../reference-architecture/reference-architectures/cts-quickstart-da.svg.svg)
 

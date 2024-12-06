@@ -26,10 +26,11 @@ variable "use_existing_resource_group" {
   default     = false
 }
 
-variable "name" {
+variable "vpn_name" {
   type        = string
   description = "The name of the VPN."
   default     = "cts-qs-vpn"
+  nullable    = false
 }
 
 ##############################################################################
@@ -59,6 +60,7 @@ variable "vpn_client_access_group_users" {
   description = "The list of users in the Client to Site VPN Access Group"
   type        = list(string)
   default     = []
+  nullable    = false
 }
 
 variable "existing_vpc_crn" {
@@ -74,6 +76,7 @@ variable "provider_visibility" {
   description = "Set the visibility value for the IBM terraform provider. Supported values are `public`, `private`, `public-and-private`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints)."
   type        = string
   default     = "private"
+  nullable    = false
 
   validation {
     condition     = contains(["public", "private", "public-and-private"], var.provider_visibility)

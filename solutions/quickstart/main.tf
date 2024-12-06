@@ -126,7 +126,7 @@ module "vpn" {
   source                        = "../.."
   depends_on                    = [time_sleep.wait_for_security_group]
   server_cert_crn               = local.secrets_manager_cert_crn
-  vpn_gateway_name              = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
+  vpn_gateway_name              = var.prefix != null ? "${var.prefix}-${var.vpn_name}" : var.vpn_name
   resource_group_id             = module.resource_group.resource_group_id
   subnet_ids                    = local.subnet_ids
   create_policy                 = true

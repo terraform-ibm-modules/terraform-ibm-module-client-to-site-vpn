@@ -24,12 +24,14 @@ variable "use_existing_resource_group" {
   type        = bool
   description = "Whether to use an existing resource group."
   default     = false
+  nullable    = false
 }
 
-variable "name" {
+variable "vpn_name" {
   type        = string
   description = "The name of the VPN."
   default     = "cts-vpn"
+  nullable    = false
 }
 
 ##############################################################################
@@ -83,20 +85,21 @@ variable "vpn_subnet_cidr_zone_2" {
 
 variable "remote_cidr" {
   type        = string
-  description = "The source CIDR block to use for creating ACL rule and security group (if add_security_group input variable is set to true). Must be set if 'existing_subnet_ids' input variable is not set."
-  default     = null
+  description = "The source CIDR block to use for creating ACL rule and security group (if add_security_group input variable is set to true). By default the deny all inbound and outbound ACL rule is created. Must be set if 'existing_subnet_ids' input variable is not set."
 }
 
 variable "add_security_group" {
   type        = bool
   description = "Add security group to a new VPN?"
   default     = true
+  nullable    = false
 }
 
 variable "vpn_client_access_group_users" {
   description = "The list of users in the Client to Site VPN Access Group"
   type        = list(string)
   default     = []
+  nullable    = false
 }
 
 variable "access_group_name" {
@@ -109,6 +112,7 @@ variable "create_policy" {
   description = "Whether to create a new access group (using the value of the 'access_group_name' input variable) with a VPN Client role."
   type        = bool
   default     = true
+  nullable    = false
 }
 
 variable "vpn_server_routes" {
@@ -137,7 +141,7 @@ variable "vpn_zone_2" {
 
 variable "existing_subnet_ids" {
   type        = list(string)
-  description = "Optionally pass a list of existing subnet ids (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the 'vpn_subnet_cidr_zone_1' and 'vpn_subnet_cidr_zone_2' input variables."
+  description = "Optionally pass a list of existing subnet ids (supports a maximum of 2) to use for the client-to-site VPN. If no subnets passed, new subnets will be created using the CIDR ranges specified in the 'vpn_subnet_cidr_zone_1' and 'vpn_subnet_cidr_zone_2' input variables. On existing subnets no ACL rules are set."
   nullable    = false
   default     = []
 
@@ -155,6 +159,7 @@ variable "provider_visibility" {
   description = "Set the visibility value for the IBM terraform provider. Supported values are `public`, `private`, `public-and-private`. [Learn more](https://registry.terraform.io/providers/IBM-Cloud/ibm/latest/docs/guides/custom-service-endpoints)."
   type        = string
   default     = "private"
+  nullable    = false
 
   validation {
     condition     = contains(["public", "private", "public-and-private"], var.provider_visibility)

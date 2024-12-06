@@ -100,16 +100,39 @@ locals {
       destination = subnet_cidr
       direction   = "inbound"
       udp = {
-        source_port_min = 443
-        source_port_max = 443
+        port_min = 443
+        port_max = 443
       }
     }
   ]
   acl_object = length(var.existing_subnet_ids) <= 0 ? {
     "vpn-network-acl-rule" = {
-      rules = concat(local.acl_outbound_rules, local.acl_inbound_rules),
+      rules = concat(local.acl_outbound_rules, local.acl_inbound_rules, local.deny_all_rules),
     }
   } : {}
+
+  deny_all_rules = [
+    {
+      name        = "ibmflow-deny-all-inbound"
+      action      = "deny"
+      source      = "0.0.0.0/0"
+      destination = "0.0.0.0/0"
+      direction   = "inbound"
+      tcp         = null
+      udp         = null
+      icmp        = null
+    },
+    {
+      name        = "ibmflow-deny-all-outbound"
+      action      = "deny"
+      source      = "0.0.0.0/0"
+      destination = "0.0.0.0/0"
+      direction   = "outbound"
+      tcp         = null
+      udp         = null
+      icmp        = null
+    }
+  ]
 
   security_group_rule = [{
     name      = replace("allow-${var.remote_cidr}-inbound", "/\\.|\\//", "-")
@@ -133,8 +156,6 @@ locals {
     }
   )
 }
-
-# #  we want support existing subnet and do not set acl rules on it
 
 module "existing_vpc_crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
@@ -178,8 +199,10 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
         for_each = ([rules.value]
         )
         content {
-          port_min = lookup(rules.value.udp, "port_min", null)
-          port_max = lookup(rules.value.udp, "port_max", null)
+          port_min        = lookup(rules.value.udp, "port_min", null)
+          port_max        = lookup(rules.value.udp, "port_max", null)
+          source_port_min = lookup(rules.value.udp, "source_port_min", null)
+          source_port_max = lookup(rules.value.udp, "source_port_max", null)
         }
       }
     }
@@ -212,7 +235,7 @@ module "vpn" {
   source                        = "../.."
   depends_on                    = [time_sleep.wait_for_security_group]
   server_cert_crn               = local.secrets_manager_cert_crn
-  vpn_gateway_name              = var.prefix != null ? "${var.prefix}-${var.name}" : var.name
+  vpn_gateway_name              = var.prefix != null ? "${var.prefix}-${var.vpn_name}" : var.vpn_name
   resource_group_id             = module.resource_group.resource_group_id
   subnet_ids                    = local.subnet_ids
   create_policy                 = var.create_policy
