@@ -53,6 +53,7 @@
           "name": "quickstart",
           "install_type": "fullstack",
           "working_directory": "solutions/quickstart",
+          "dependency_version_2": true,
           "dependencies": [
             {
               "flavors": [
@@ -227,6 +228,7 @@
           "name": "standard",
           "install_type": "fullstack",
           "working_directory": "solutions/standard",
+          "dependency_version_2": true,
           "dependencies": [
             {
               "flavors": [
