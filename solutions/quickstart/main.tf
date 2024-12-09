@@ -144,16 +144,20 @@ resource "time_sleep" "wait_for_security_group" {
 }
 
 module "client_to_site_sg" {
-  source                       = "terraform-ibm-modules/security-group/ibm"
-  version                      = "2.6.2"
-  add_ibm_cloud_internal_rules = true
-  vpc_id                       = local.existing_vpc_id
-  resource_group               = module.resource_group.resource_group_id
-  security_group_name          = var.prefix != null ? "${var.prefix}-client-to-site-sg" : "client-to-site-sg"
+  source              = "terraform-ibm-modules/security-group/ibm"
+  version             = "2.6.2"
+  vpc_id              = local.existing_vpc_id
+  resource_group      = module.resource_group.resource_group_id
+  security_group_name = var.prefix != null ? "${var.prefix}-client-to-site-sg" : "client-to-site-sg"
   security_group_rules = [{
     name      = "allow-all-inbound"
     direction = "inbound"
     remote    = "0.0.0.0/0"
+    },
+    {
+      name      = "allow-all-outbound"
+      direction = "outbound"
+      remote    = "0.0.0.0/0"
   }]
 }
 
