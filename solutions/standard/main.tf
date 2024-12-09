@@ -194,10 +194,8 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
       destination = rules.value.destination
       direction   = rules.value.direction
 
-
       dynamic "udp" {
-        for_each = ([rules.value]
-        )
+        for_each = (rules.value.udp == null ? [] : length([for value in ["port_min", "port_max", "source_port_min", "source_port_max"] : true if lookup(rules.value["udp"], value, null) == null]) == 4 ? [] : [rules.value])
         content {
           port_min        = lookup(rules.value.udp, "port_min", null)
           port_max        = lookup(rules.value.udp, "port_max", null)
@@ -260,7 +258,7 @@ module "client_to_site_sg" {
   add_ibm_cloud_internal_rules = true
   vpc_id                       = local.existing_vpc_id
   resource_group               = module.resource_group.resource_group_id
-  security_group_name          = var.prefix != null ? "${var.prefix}-client-sto-site-sg" : "client-to-site-sg"
+  security_group_name          = var.prefix != null ? "${var.prefix}-client-to-site-sg" : "client-to-site-sg"
   security_group_rules         = local.security_group_rule
 }
 
