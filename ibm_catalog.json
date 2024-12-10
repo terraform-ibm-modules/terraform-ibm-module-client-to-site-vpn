@@ -257,12 +257,13 @@
             },
             {
               "flavors": [
-                "standard"
+                  "standard"
               ],
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
               "id": "6d6ebc76-7bbd-42f5-8bc7-78f4fabd5944-global",
               "name": "deploy-arch-ibm-secrets-manager",
               "version": ">=1.0.0",
-              "optional": false
+              "optional": true
             }
           ],
           "configuration": [
