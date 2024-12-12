@@ -140,28 +140,13 @@
               "key": "certificate_template_name"
             },
             {
-              "key": "vpn_subnet_cidr_zone_1"
-            },
-            {
               "key": "vpn_client_access_group_users"
-            },
-            {
-              "key": "access_group_name"
-            },
-            {
-              "key": "create_policy"
-            },
-            {
-              "key": "vpn_server_routes"
             },
             {
               "key": "existing_vpc_crn"
             },
             {
-              "key": "vpn_zone_1"
-            },
-            {
-              "key": "vpn_zone_2"
+              "key": "vpn_client_access_acl_ids"
             }
           ],
           "iam_permissions": [
@@ -352,6 +337,12 @@
             },
             {
               "key": "vpn_zone_2"
+            },
+            {
+              "key": "client_ip_pool"
+            },
+            {
+              "key": "vpn_client_access_acl_ids"
             }
           ],
           "iam_permissions": [
