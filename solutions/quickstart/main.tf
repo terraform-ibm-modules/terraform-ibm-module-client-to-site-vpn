@@ -60,6 +60,7 @@ locals {
   subnet_ids      = [ibm_is_subnet.client_to_site_subnet_zone_1.id]
   zone_1          = "${local.vpc_region}-1" # hardcode to first zone in region
   target_ids      = [module.vpn.vpn_server_id]
+  client_ip_pool  = "10.0.0.0/20"
   vpn_server_routes = {
     "vpc-10" = {
       destination = "10.0.0.0/8"
@@ -68,6 +69,11 @@ locals {
     # Add route for PaaS IBM Cloud backbone. This is mostly used to give access to the Kube master endpoints.
     "vpc-166" = {
       destination = "166.8.0.0/14"
+      action      = "deliver"
+    },
+    # Add route for IaaS IBM Cloud backbone.
+    "vpc-161" = {
+      destination = "161.26.0.0/16"
       action      = "deliver"
     }
   }
@@ -90,7 +96,7 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
   name = var.prefix != null ? "${var.prefix}-client-to-site-acl" : "client-to-site-acl"
   vpc  = local.existing_vpc_id
   rules {
-    name        = "outbound"
+    name        = "outbound-udp"
     action      = "allow"
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
@@ -101,7 +107,15 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
     }
   }
   rules {
-    name        = "inbound"
+    name        = "outbound-tcp"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "outbound"
+    tcp {}
+  }
+  rules {
+    name        = "inbound-udp"
     action      = "allow"
     source      = "0.0.0.0/0"
     destination = "0.0.0.0/0"
@@ -110,6 +124,14 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
       port_min = 443
       port_max = 443
     }
+  }
+  rules {
+    name        = "inbound-tcp"
+    action      = "allow"
+    source      = "0.0.0.0/0"
+    destination = "0.0.0.0/0"
+    direction   = "inbound"
+    tcp {}
   }
 }
 
@@ -121,6 +143,47 @@ resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
   zone            = local.zone_1
   network_acl     = ibm_is_network_acl.client_to_site_vpn_acl.id
 }
+
+##############################################################################
+# we need to add the ACL rule to existing ACL to gain access from new client-to-site
+# subnet to desired destination (in SLZ case to cluster dashboard)
+##############################################################################
+data "ibm_is_network_acl" "existing_acls" {
+  for_each    = toset(var.vpn_client_access_acl_ids)
+  network_acl = each.value
+}
+
+resource "ibm_is_network_acl_rule" "outbound_acl_rules" {
+  for_each    = data.ibm_is_network_acl.existing_acls
+  network_acl = each.key
+  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "outbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "outbound"][0].id : null
+  name        = "outbound-cts-vpn-1"
+  action      = "allow"
+  source      = "10.0.0.0/8"
+  destination = local.client_ip_pool
+  direction   = "outbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
+}
+
+resource "ibm_is_network_acl_rule" "inbound_acl_rules" {
+  for_each    = data.ibm_is_network_acl.existing_acls
+  network_acl = each.key
+  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "inbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "inbound"][0].id : null
+  name        = "inbound-cts-vpn-1"
+  action      = "allow"
+  source      = local.client_ip_pool
+  destination = "10.0.0.0/8"
+  direction   = "inbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
+}
+
+##############################################################################
 
 module "vpn" {
   source                        = "../.."
@@ -166,4 +229,20 @@ resource "ibm_is_security_group_target" "sg_target" {
   count          = length([module.vpn.vpn_server_id])
   security_group = module.client_to_site_sg.security_group_id
   target         = local.target_ids[count.index]
+}
+
+# Configure private cert engine if provisioning a new certificate
+module "private_secret_engine" {
+  source                    = "terraform-ibm-modules/secrets-manager-private-cert-engine/ibm"
+  version                   = "1.3.2"
+  secrets_manager_guid      = module.existing_sm_crn_parser.service_instance
+  region                    = module.existing_sm_crn_parser.region
+  root_ca_name              = "root-ca"
+  root_ca_common_name       = "test.com"
+  root_ca_max_ttl           = "8760h"
+  intermediate_ca_name      = "intermediate-ca"
+  certificate_template_name = "my-template"
+  providers = {
+    ibm = ibm.ibm-sm
+  }
 }

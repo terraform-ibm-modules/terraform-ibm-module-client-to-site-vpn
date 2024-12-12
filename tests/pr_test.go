@@ -311,6 +311,7 @@ func TestStandardSolutionExistingResources(t *testing.T) {
 				"remote_cidr":                           "10.10.120.0/24",
 				"vpn_subnet_cidr_zone_1":                "10.10.40.0/24",
 				"vpn_subnet_cidr_zone_2":                "10.10.80.0/24",
+				"vpn_client_access_acl_ids":             terraform.Output(t, existingTerraformOptions, "default_network_acl_id"),
 			},
 		})
 		output, err := options.RunTestConsistency()

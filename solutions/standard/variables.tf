@@ -151,6 +151,18 @@ variable "existing_subnet_ids" {
   }
 }
 
+variable "client_ip_pool" {
+  type        = string
+  description = "The VPN client IPv4 address pool, expressed in CIDR format. The request must not overlap with any existing address prefixes in the VPC or any of the following reserved address ranges: - 127.0.0.0/8 (IPv4 loopback addresses) - 161.26.0.0/16 (IBM services) - 166.8.0.0/14 (Cloud Service Endpoints) - 169.254.0.0/16 (IPv4 link-local addresses) - 224.0.0.0/4 (IPv4 multicast addresses). The prefix length of the client IP address pool's CIDR must be between /9 (8,388,608 addresses) and /22 (1024 addresses). A CIDR block that contains twice the number of IP addresses that are required to enable the maximum number of concurrent connections is recommended."
+  default     = "10.0.0.0/20"
+}
+
+variable "vpn_client_access_acl_ids" {
+  type        = list(string)
+  description = "List of existing ACL rules to which VPN connection rules is added."
+  default     = []
+}
+
 ##############################################################################
 # Provider
 ##############################################################################

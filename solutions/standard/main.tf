@@ -77,10 +77,29 @@ locals {
   target_ids      = [module.vpn.vpn_server_id]
 
   subnet_cidrs = [var.vpn_subnet_cidr_zone_1, var.vpn_subnet_cidr_zone_2]
-  acl_outbound_rules = [
+
+  ##############################################################################
+  # ACL rules
+  ##############################################################################
+  acl_outbound_rules_tcp = [
     for i, subnet_cidr in local.subnet_cidrs :
     {
-      name        = "outbound-${i}"
+      name        = "outbound-tcp-${i}"
+      action      = "allow"
+      source      = subnet_cidr
+      destination = var.remote_cidr
+      direction   = "outbound"
+      udp         = null
+      tcp = { port_min = 1
+        port_max        = 65535
+        source_port_min = 1
+      source_port_max = 65535 }
+    }
+  ]
+  acl_outbound_rules_udp = [
+    for i, subnet_cidr in local.subnet_cidrs :
+    {
+      name        = "outbound-udp-${i}"
       action      = "allow"
       source      = subnet_cidr
       destination = var.remote_cidr
@@ -89,12 +108,28 @@ locals {
         source_port_min = 443
         source_port_max = 443
       }
+      tcp = null
     }
   ]
-  acl_inbound_rules = [
+  acl_inbound_rules_tcp = [
     for i, subnet_cidr in local.subnet_cidrs :
     {
-      name        = "inbound-${i}"
+      name        = "inbound-tcp-${i}"
+      action      = "allow"
+      source      = var.remote_cidr
+      destination = subnet_cidr
+      direction   = "inbound"
+      tcp = { port_min = 1
+        port_max        = 65535
+        source_port_min = 1
+      source_port_max = 65535 }
+      udp = null
+    }
+  ]
+  acl_inbound_rules_udp = [
+    for i, subnet_cidr in local.subnet_cidrs :
+    {
+      name        = "inbound-udp-${i}"
       action      = "allow"
       source      = var.remote_cidr
       destination = subnet_cidr
@@ -103,14 +138,14 @@ locals {
         port_min = 443
         port_max = 443
       }
+      tcp = null
     }
   ]
   acl_object = length(var.existing_subnet_ids) <= 0 ? {
     "vpn-network-acl-rule" = {
-      rules = concat(local.acl_outbound_rules, local.acl_inbound_rules, local.deny_all_rules),
+      rules = concat(local.acl_inbound_rules_tcp, local.acl_inbound_rules_udp, local.acl_outbound_rules_tcp, local.acl_outbound_rules_udp, local.deny_all_rules),
     }
   } : {}
-
   deny_all_rules = [
     {
       name        = "ibmflow-deny-all-inbound"
@@ -133,6 +168,7 @@ locals {
       icmp        = null
     }
   ]
+  ##############################################################################
 
   security_group_rule = [{
     name      = replace("allow-${var.remote_cidr}-inbound", "/\\.|\\//", "-")
@@ -145,6 +181,11 @@ locals {
       # Add route for PaaS IBM Cloud backbone. This is mostly used to give access to the Kube master endpoints.
       "vpc-166" = {
         destination = "166.8.0.0/14"
+        action      = "deliver"
+      },
+      # Add route for IaaS IBM Cloud backbone.
+      "vpc-161" = {
+        destination = "161.26.0.0/16"
         action      = "deliver"
       }
     },
@@ -203,11 +244,18 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
           source_port_max = lookup(rules.value.udp, "source_port_max", null)
         }
       }
+      dynamic "tcp" {
+        for_each = (rules.value.tcp == null ? [] : length([for value in ["port_min", "port_max", "source_port_min", "source_port_max"] : true if lookup(rules.value["tcp"], value, null) == null]) == 4 ? [] : [rules.value])
+        content {
+          port_min        = lookup(rules.value.tcp, "port_min", null)
+          port_max        = lookup(rules.value.tcp, "port_max", null)
+          source_port_min = lookup(rules.value.tcp, "source_port_min", null)
+          source_port_max = lookup(rules.value.tcp, "source_port_max", null)
+        }
+      }
     }
   }
 }
-
-# # input: restrict to the clients IPS () - required - maybe in descriptio u can cfeate 0.0.0 to use as it oepn
 
 resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
   count           = length(var.existing_subnet_ids) > 0 ? 0 : 1
@@ -228,6 +276,78 @@ resource "ibm_is_subnet" "client_to_site_subnet_zone_2" {
   zone            = local.zone_2
   network_acl     = ibm_is_network_acl.client_to_site_vpn_acl[keys(local.acl_object)[0]].id
 }
+
+##############################################################################
+# we need to add the ACL rule to existing ACL to gain access from new client-to-site
+# subnet to desired destination (in SLZ case to cluster dashboard)
+##############################################################################
+
+data "ibm_is_network_acl" "existing_acls" {
+  for_each    = toset(var.vpn_client_access_acl_ids)
+  network_acl = each.value
+}
+
+resource "ibm_is_network_acl_rule" "outbound_acl_rules_subnet1" {
+  for_each    = data.ibm_is_network_acl.existing_acls
+  network_acl = each.key
+  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "outbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "outbound"][0].id : null
+  name        = "outbound-cts-vpn-1"
+  action      = "allow"
+  source      = var.vpn_subnet_cidr_zone_1
+  destination = var.client_ip_pool
+  direction   = "outbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
+}
+
+resource "ibm_is_network_acl_rule" "inbound_acl_rules_subnet1" {
+  for_each    = data.ibm_is_network_acl.existing_acls
+  network_acl = each.key
+  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "inbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "inbound"][0].id : null
+  name        = "inbound-cts-vpn-1"
+  action      = "allow"
+  source      = var.client_ip_pool
+  destination = var.vpn_subnet_cidr_zone_1
+  direction   = "inbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
+}
+
+resource "ibm_is_network_acl_rule" "outbound_acl_rules_subnet2" {
+  for_each    = data.ibm_is_network_acl.existing_acls
+  network_acl = each.key
+  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "outbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "outbound"][0].id : null
+  name        = "outbound-cts-vpn-2"
+  action      = "allow"
+  source      = var.vpn_subnet_cidr_zone_2
+  destination = var.client_ip_pool
+  direction   = "outbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
+}
+
+resource "ibm_is_network_acl_rule" "inbound_acl_rules_subnet2" {
+  for_each    = data.ibm_is_network_acl.existing_acls
+  network_acl = each.key
+  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "inbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "inbound"][0].id : null
+  name        = "inbound-cts-vpn-2"
+  action      = "allow"
+  source      = var.client_ip_pool
+  destination = var.vpn_subnet_cidr_zone_2
+  direction   = "inbound"
+  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
+  lifecycle {
+    ignore_changes = [before]
+  }
+}
+
+##############################################################################
 
 module "vpn" {
   source                        = "../.."
