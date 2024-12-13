@@ -1,0 +1,7 @@
+{
+  "ibmcloud_api_key": $VALIDATION_APIKEY,
+  "existing_secrets_manager_instance_crn": $SM_CRN,
+  "certificate_template_name": $PRIVATE_CERT_TEMPLATE_NAME,
+  "cert_common_name": $DNS_CLOUD_DOMAIN,
+  "provider_visibility": "public"
+}

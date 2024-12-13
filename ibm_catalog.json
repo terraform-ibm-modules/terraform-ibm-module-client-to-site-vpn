@@ -9,35 +9,33 @@
         "ibm_created",
         "target_terraform",
         "terraform",
-        "reference_architecture",
         "solution"
       ],
       "keywords": [
-        "vpc",
-        "slz",
         "IaC",
+        "network",
         "infrastructure as code",
         "terraform",
         "solution",
         "VPN",
         "OpenVPN"
       ],
-      "short_description": "Creates client-to-site VPN connectivity to landing zones using VPN Server",
-      "long_description": "By default, the landing zone patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing landing zone. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.",
-      "offering_docs_url": "https://cloud.ibm.com/docs/secure-infrastructure-vpc?topic=secure-infrastructure-vpc-connect-landingzone-client-vpn",
-      "offering_icon_url": "https://broker-staging.vpnaasdev.cloud.ibm.com/C2S_icon.svg",
+      "short_description": "Creates client-to-site VPN connectivity to VPC",
+      "long_description": "Some VPC patterns are configured with private networks not available over the internet. To access these networks, there are several connectivity options. This deployable architecture pattern configures the client-to-site VPN Server connectivity with only a few required inputs to configure it within an existing VPC. Once deployed, you can install an OpenVPN client application and import a profile from the VPN Server on the devices you want to access the VPN.  The configuration can include a list of users that will be provided access to the private network, controlled by IBM Cloud IAM.",
+      "offering_docs_url": "https://github.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/blob/main/solutions/standard/README.md",
+      "offering_icon_url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/main/images/c2s_vpn.svg",
       "provider_name": "IBM",
       "features": [
         {
-          "description": "Supports creating and configuring a new Secrets Manager instance, or using an existing one, to create a secret group and a new private cert.",
-          "title": "Creates and configures an optional Secrets Manager instance, or uses existing."
+          "description": "Supports using an existing Secrets Manager instance, to create a secret group and a new private cert.",
+          "title": "Configures existing Secrets Manager instance, and create a secret group and a new private cert."
         },
         {
-          "description": "The network ACL on this subnet grants all access from any source.",
-          "title": "A subnet named 'client-to-site-subnet' in the landing-zone management VPC"
+          "description": "The network ACL on this subnet grants the access from sources according to the rules defined with 'network_acls' input variable.",
+          "title": "A subnet named 'client-to-site-subnet' in the VPC"
         },
         {
-          "description": "A new security group named 'client-to-site-sg' that allows all incoming request from any source",
+          "description": "A new security group named 'client-to-site-sg' that allows incoming request from sources defined in'security_group_rules'",
           "title": "client-to-site Security Group"
         },
         {
@@ -45,16 +43,16 @@
           "title": "A new IAM Access Group for VPN users"
         },
         {
-          "description": "VPN gateway located in the client-to-site-subnet subnet with routes configured to allow accessing the landing zone VPCs.",
+          "description": "VPN gateway located in the client-to-site-subnet subnet with routes configured to allow accessing the VPCs.",
           "title": "A client-to-site VPN server"
         }
       ],
       "flavors": [
         {
-          "label": "Standard",
-          "name": "standard",
-          "install_type": "extension",
-          "working_directory": "extensions/landing-zone",
+          "label": "Quickstart",
+          "name": "quickstart",
+          "install_type": "fullstack",
+          "working_directory": "solutions/quickstart",
           "dependencies": [
             {
               "flavors": [
@@ -86,6 +84,39 @@
           ],
           "configuration": [
             {
+              "key": "ibmcloud_api_key"
+            },
+            {
+              "key": "provider_visibility",
+              "options": [
+                {
+                  "displayname": "private",
+                  "value": "private"
+                },
+                {
+                  "displayname": "public",
+                  "value": "public"
+                },
+                {
+                  "displayname": "public-and-private",
+                  "value": "public-and-private"
+                }
+              ]
+            },
+            {
+              "key": "prefix",
+              "required": true
+            },
+            {
+              "key": "use_existing_resource_group"
+            },
+            {
+              "key": "resource_group_name"
+            },
+            {
+              "key": "vpn_name"
+            },
+            {
               "custom_config": {
                 "config_constraints": {
                   "generationType": "2"
@@ -96,6 +127,27 @@
               },
               "key": "region",
               "required": true
+            },
+            {
+              "key": "existing_secrets_manager_instance_crn"
+            },
+            {
+              "key": "existing_secrets_manager_cert_crn"
+            },
+            {
+              "key": "cert_common_name"
+            },
+            {
+              "key": "certificate_template_name"
+            },
+            {
+              "key": "vpn_client_access_group_users"
+            },
+            {
+              "key": "existing_vpc_crn"
+            },
+            {
+              "key": "vpn_client_access_acl_ids"
             }
           ],
           "iam_permissions": [
@@ -116,10 +168,6 @@
             "descriptions": "",
             "features": [
               {
-                "title": "Works with all three landing zone variations (VPC, OpenShift and VSI)",
-                "description": "Yes"
-              },
-              {
                 "title": "Supports OpenVPN Clients",
                 "description": "Yes"
               },
@@ -132,6 +180,14 @@
                 "description": "Yes"
               },
               {
+                "title": "ACL rule that grants all access from any source",
+                "description": "Yes"
+              },
+              {
+                "title": "Security group that allows all incoming request from any source",
+                "description": "Yes"
+              },
+              {
                 "title": "IBM-managed VPN Server",
                 "description": "Yes"
               },
@@ -141,6 +197,211 @@
               }
             ],
             "diagrams": [
+              {
+                "diagram": {
+                  "caption": "Client-to-site VPN configuration for accessing a VPC",
+                  "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/main/reference-architectures/reference-architectures/cts-quickstart-da.svg",
+                  "type": "image/svg+xml"
+                },
+                "description": "Client-to-site VPN configuration for accessing a VPC."
+              }
+            ]
+          }
+        },
+        {
+          "label": "Standard",
+          "name": "standard",
+          "install_type": "fullstack",
+          "working_directory": "solutions/standard",
+          "dependencies": [
+            {
+              "flavors": [
+                "standard"
+              ],
+              "id": "95fccffc-ae3b-42df-b6d9-80be5914d852-global",
+              "name": "deploy-arch-ibm-slz-ocp",
+              "version": ">=1.0.0",
+              "optional": true
+            },
+            {
+              "flavors": [
+                "standard"
+              ],
+              "id": "9fc0fa64-27af-4fed-9dce-47b3640ba739-global",
+              "name": "deploy-arch-ibm-slz-vpc",
+              "version": ">=1.0.0",
+              "optional": true
+            },
+            {
+              "flavors": [
+                "standard"
+              ],
+              "id": "ef663980-4c71-4fac-af4f-4a510a9bcf68-global",
+              "name": "deploy-arch-ibm-slz-vsi",
+              "version": ">=1.0.0",
+              "optional": true
+            },
+            {
+              "flavors": [
+                  "standard"
+              ],
+              "catalog_id": "7a4d68b4-cf8b-40cd-a3d1-f49aff526eb3",
+              "id": "6d6ebc76-7bbd-42f5-8bc7-78f4fabd5944-global",
+              "name": "deploy-arch-ibm-secrets-manager",
+              "version": ">=1.0.0",
+              "optional": true
+            }
+          ],
+          "configuration": [
+            {
+              "key": "ibmcloud_api_key"
+            },
+            {
+              "key": "provider_visibility",
+              "options": [
+                {
+                  "displayname": "private",
+                  "value": "private"
+                },
+                {
+                  "displayname": "public",
+                  "value": "public"
+                },
+                {
+                  "displayname": "public-and-private",
+                  "value": "public-and-private"
+                }
+              ]
+            },
+            {
+              "key": "prefix",
+              "required": true
+            },
+            {
+              "key": "use_existing_resource_group"
+            },
+            {
+              "key": "resource_group_name"
+            },
+            {
+              "key": "vpn_name"
+            },
+            {
+              "custom_config": {
+                "config_constraints": {
+                  "generationType": "2"
+                },
+                "grouping": "deployment",
+                "original_grouping": "deployment",
+                "type": "vpc_region"
+              },
+              "key": "region",
+              "required": true
+            },
+            {
+              "key": "existing_secrets_manager_instance_crn"
+            },
+            {
+              "key": "existing_secrets_manager_cert_crn"
+            },
+            {
+              "key": "cert_common_name"
+            },
+            {
+              "key": "certificate_template_name"
+            },
+            {
+              "key": "remote_cidr"
+            },
+            {
+              "key": "vpn_subnet_cidr_zone_1"
+            },
+            {
+              "key": "vpn_subnet_cidr_zone_2"
+            },
+            {
+              "key": "vpn_client_access_group_users"
+            },
+            {
+              "key": "access_group_name"
+            },
+            {
+              "key": "create_policy"
+            },
+            {
+              "key": "vpn_server_routes"
+            },
+            {
+              "key": "existing_vpc_crn"
+            },
+            {
+              "key": "vpn_zone_1"
+            },
+            {
+              "key": "vpn_zone_2"
+            },
+            {
+              "key": "client_ip_pool"
+            },
+            {
+              "key": "vpn_client_access_acl_ids"
+            }
+          ],
+          "iam_permissions": [
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Administrator"
+              ],
+              "service_name": "iam-identity"
+            },
+            {
+              "role_crns": [
+                "crn:v1:bluemix:public:iam::::role:Administrator"
+              ],
+              "service_name": "is.vpc"
+            }
+          ],
+          "architecture": {
+            "descriptions": "",
+            "features": [
+              {
+                "title": "Supports OpenVPN Clients",
+                "description": "Yes"
+              },
+              {
+                "title": "Separate IAM access list for VPN users",
+                "description": "Yes"
+              },
+              {
+                "title": "Separate secured VPC subnets for VPN Server",
+                "description": "Yes"
+              },
+              {
+                "title": "ACL that controls the access from different source",
+                "description": "Yes"
+              },
+              {
+                "title": "Security group that restricts the incoming request from different source",
+                "description": "Yes"
+              },
+              {
+                "title": "IBM-managed VPN Server",
+                "description": "Yes"
+              },
+              {
+                "title": "Access to private network via VPN clients",
+                "description": "Yes"
+              }
+            ],
+            "diagrams": [
+              {
+                "diagram": {
+                  "caption": "Client-to-site VPN configuration.",
+                  "url": "https://raw.githubusercontent.com/terraform-ibm-modules/terraform-ibm-client-to-site-vpn/main/reference-architectures/reference-architectures/cts-standard-da.svg",
+                  "type": "image/svg+xml"
+                },
+                "description": "Client-to-site VPN configuration."
+              },
               {
                 "diagram": {
                   "caption": "Client-to-site VPN configuration for accessing a landing zone.",
