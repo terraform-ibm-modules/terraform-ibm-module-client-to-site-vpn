@@ -4,7 +4,7 @@
 module "resource_group" {
   source                       = "terraform-ibm-modules/resource-group/ibm"
   version                      = "1.1.6"
-  resource_group_name          = var.use_existing_resource_group == false ? (var.prefix != null ? "${var.prefix}-${var.resource_group_name}" : var.resource_group_name) : null
+  resource_group_name          = var.use_existing_resource_group == false ? ((var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.resource_group_name}" : var.resource_group_name) : null
   existing_resource_group_name = var.use_existing_resource_group == true ? var.resource_group_name : null
 }
 
@@ -38,7 +38,7 @@ module "secrets_manager_secret_group" {
   version                  = "1.2.2"
   region                   = module.existing_sm_crn_parser.region
   secrets_manager_guid     = module.existing_sm_crn_parser.service_instance
-  secret_group_name        = var.prefix != null ? "${var.prefix}-cert-secret-group" : "cert-secret-group"
+  secret_group_name        = (var.prefix != null && var.prefix != "") ? "${var.prefix}-cert-secret-group" : "cert-secret-group"
   secret_group_description = "secret group used for private certificates"
   providers = {
     ibm = ibm.ibm-sm
@@ -50,7 +50,7 @@ module "secrets_manager_private_certificate" {
   count                  = var.existing_secrets_manager_cert_crn == null ? 1 : 0
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
   version                = "1.3.1"
-  cert_name              = var.prefix != null ? "${var.prefix}-cts-vpn-private-cert" : "cts-vpn-private-cert"
+  cert_name              = (var.prefix != null && var.prefix != "") ? "${var.prefix}-cts-vpn-private-cert" : "cts-vpn-private-cert"
   cert_description       = "private certificate for client to site VPN connection"
   cert_template          = var.certificate_template_name
   cert_secrets_group_id  = local.secrets_manager_secret_group_id
@@ -215,7 +215,7 @@ module "existing_vpc_crn_parser" {
 
 resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_1" {
   count = length(var.existing_subnet_ids) > 0 ? 0 : 1
-  name  = var.prefix != null ? "${var.prefix}-client-to-site-address-prefixes-1" : "client-to-site-address-prefixes-1"
+  name  = (var.prefix != null && var.prefix != "") ? "${var.prefix}-client-to-site-address-prefixes-1" : "client-to-site-address-prefixes-1"
   zone  = local.zone_1
   vpc   = local.existing_vpc_id
   cidr  = var.vpn_subnet_cidr_zone_1
@@ -223,7 +223,7 @@ resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_1" {
 
 resource "ibm_is_vpc_address_prefix" "client_to_site_address_prefixes_zone_2" {
   count = length(var.existing_subnet_ids) > 0 ? 0 : 1
-  name  = var.prefix != null ? "${var.prefix}-client-to-site-address-prefixes-2" : "client-to-site-address-prefixes-2"
+  name  = (var.prefix != null && var.prefix != "") ? "${var.prefix}-client-to-site-address-prefixes-2" : "client-to-site-address-prefixes-2"
   zone  = local.zone_2
   vpc   = local.existing_vpc_id
   cidr  = var.vpn_subnet_cidr_zone_2
@@ -269,7 +269,7 @@ resource "ibm_is_network_acl" "client_to_site_vpn_acl" {
 resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
   count           = length(var.existing_subnet_ids) > 0 ? 0 : 1
   depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_1]
-  name            = var.prefix != null ? "${var.prefix}-client-to-site-subnet-1" : "client-to-site-subnet-1"
+  name            = (var.prefix != null && var.prefix != "") ? "${var.prefix}-client-to-site-subnet-1" : "client-to-site-subnet-1"
   vpc             = local.existing_vpc_id
   ipv4_cidr_block = var.vpn_subnet_cidr_zone_1
   zone            = local.zone_1
@@ -279,7 +279,7 @@ resource "ibm_is_subnet" "client_to_site_subnet_zone_1" {
 resource "ibm_is_subnet" "client_to_site_subnet_zone_2" {
   count           = length(var.existing_subnet_ids) > 0 ? 0 : 1
   depends_on      = [ibm_is_vpc_address_prefix.client_to_site_address_prefixes_zone_2]
-  name            = var.prefix != null ? "${var.prefix}-client-to-site-subnet-2" : "client-to-site-subnet-2"
+  name            = (var.prefix != null && var.prefix != "") ? "${var.prefix}-client-to-site-subnet-2" : "client-to-site-subnet-2"
   vpc             = local.existing_vpc_id
   ipv4_cidr_block = var.vpn_subnet_cidr_zone_2
   zone            = local.zone_2
@@ -348,12 +348,12 @@ module "vpn" {
   source                        = "../.."
   depends_on                    = [time_sleep.wait_for_security_group]
   server_cert_crn               = local.secrets_manager_cert_crn
-  vpn_gateway_name              = var.prefix != null ? "${var.prefix}-${var.vpn_name}" : var.vpn_name
+  vpn_gateway_name              = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.vpn_name}" : var.vpn_name
   resource_group_id             = module.resource_group.resource_group_id
   subnet_ids                    = local.subnet_ids
   create_policy                 = var.create_policy
   vpn_client_access_group_users = var.vpn_client_access_group_users
-  access_group_name             = var.prefix != null ? "${var.prefix}-${var.access_group_name}" : var.access_group_name
+  access_group_name             = (var.prefix != null && var.prefix != "") ? "${var.prefix}-${var.access_group_name}" : var.access_group_name
   secrets_manager_id            = module.existing_sm_crn_parser.service_instance
   vpn_server_routes             = local.vpn_server_routes
 }
@@ -373,7 +373,7 @@ module "client_to_site_sg" {
   add_ibm_cloud_internal_rules = true
   vpc_id                       = local.existing_vpc_id
   resource_group               = module.resource_group.resource_group_id
-  security_group_name          = var.prefix != null ? "${var.prefix}-client-to-site-sg" : "client-to-site-sg"
+  security_group_name          = (var.prefix != null && var.prefix != "") ? "${var.prefix}-client-to-site-sg" : "client-to-site-sg"
   security_group_rules         = local.security_group_rule
 }
 

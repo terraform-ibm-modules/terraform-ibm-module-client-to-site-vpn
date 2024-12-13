@@ -6,12 +6,12 @@ variable "ibmcloud_api_key" {
 
 variable "prefix" {
   type        = string
-  description = "Optional. The prefix to append to all resources that this solution creates. Must begin with a letter and contain only lowercase letters, numbers, and - characters."
-  default     = null
+  description = "Optional. The prefix to append to all resources that this solution creates. Must begin with a letter and contain only lowercase letters, numbers, and - characters. Prefix is ignored if it is `null` or empty string (\"\")."
+  default     = "standard"
 
   validation {
     error_message = "Prefix must begin with a letter and contain only lowercase letters, numbers, and - characters."
-    condition     = var.prefix == null ? true : can(regex("^([A-z]|[a-z][-a-z0-9]*[a-z0-9])$", var.prefix))
+    condition     = var.prefix == null || var.prefix == "" ? true : can(regex("^([A-z]|[a-z][-a-z0-9]*[a-z0-9])$", var.prefix))
   }
 }
 
@@ -29,7 +29,7 @@ variable "use_existing_resource_group" {
 
 variable "vpn_name" {
   type        = string
-  description = "The name of the VPN."
+  description = "The name of the VPN. If a prefix input variable is passed, it is prefixed to the value in the `<prefix>-value` format."
   default     = "cts-vpn"
   nullable    = false
 }
@@ -160,7 +160,7 @@ variable "client_ip_pool" {
 
 variable "vpn_client_access_acl_ids" {
   type        = list(string)
-  description = "List of existing ACL rules to which VPN connection rules is added."
+  description = "List of existing ACL rule IDs to which VPN connection rules is added."
   default     = []
   nullable    = false
 }
