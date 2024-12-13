@@ -76,7 +76,7 @@ locals {
   zone_2          = var.vpn_zone_2 != null ? var.vpn_zone_2 : "${local.vpc_region}-2" # hardcode to second zone in region
   target_ids      = [module.vpn.vpn_server_id]
 
-  subnet_cidrs = [var.vpn_subnet_cidr_zone_1, var.vpn_subnet_cidr_zone_2]
+  subnet_cidrs = [var.vpn_subnet_cidr_zone_1, var.vpn_subnet_cidr_zone_2, var.client_ip_pool]
 
   ##############################################################################
   # ACL rules
@@ -90,10 +90,12 @@ locals {
       destination = var.remote_cidr
       direction   = "outbound"
       udp         = null
-      tcp = { port_min = 1
+      tcp = {
+        port_min        = 1
         port_max        = 65535
         source_port_min = 1
-      source_port_max = 65535 }
+        source_port_max = 65535
+      }
     }
   ]
   acl_outbound_rules_udp = [
@@ -119,10 +121,12 @@ locals {
       source      = var.remote_cidr
       destination = subnet_cidr
       direction   = "inbound"
-      tcp = { port_min = 1
+      tcp = {
+        port_min        = 1
         port_max        = 65535
         source_port_min = 1
-      source_port_max = 65535 }
+        source_port_max = 65535
+      }
       udp = null
     }
   ]
@@ -174,6 +178,11 @@ locals {
     name      = replace("allow-${var.remote_cidr}-inbound", "/\\.|\\//", "-")
     direction = "inbound"
     remote    = var.remote_cidr
+    },
+    {
+      name      = replace("allow-${var.remote_cidr}-outbound", "/\\.|\\//", "-")
+      direction = "outbound"
+      remote    = var.remote_cidr
   }]
 
   vpn_server_routes = merge(
@@ -282,18 +291,34 @@ resource "ibm_is_subnet" "client_to_site_subnet_zone_2" {
 # subnet to desired destination (in SLZ case to cluster dashboard)
 ##############################################################################
 
+locals {
+  existing_subnets_with_acls = flatten([
+    for acl_rule in data.ibm_is_network_acl.existing_acls : [
+      for subnet in acl_rule.subnets : {
+        acl_rule = acl_rule.id
+        subnet   = subnet
+      }
+    ]
+  ])
+}
+
 data "ibm_is_network_acl" "existing_acls" {
   for_each    = toset(var.vpn_client_access_acl_ids)
   network_acl = each.value
 }
 
+data "ibm_is_subnet" "existing_subnets" {
+  for_each   = { for i, v in local.existing_subnets_with_acls : i => v }
+  identifier = each.value.subnet.id
+}
+
 resource "ibm_is_network_acl_rule" "outbound_acl_rules_subnet1" {
-  for_each    = data.ibm_is_network_acl.existing_acls
-  network_acl = each.key
-  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "outbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "outbound"][0].id : null
-  name        = "outbound-cts-vpn-1"
+  for_each    = data.ibm_is_subnet.existing_subnets
+  network_acl = each.value.network_acl
+  before      = length(data.ibm_is_network_acl.existing_acls[each.value.network_acl].rules) > 0 && length([for r in data.ibm_is_network_acl.existing_acls[each.value.network_acl].rules : r if r.direction == "outbound"]) > 0 ? [for r in data.ibm_is_network_acl.existing_acls[each.value.network_acl].rules : r if r.direction == "outbound"][0].id : null
+  name        = "outbound-cts-vpn-${each.key}"
   action      = "allow"
-  source      = var.vpn_subnet_cidr_zone_1
+  source      = each.value.ipv4_cidr_block
   destination = var.client_ip_pool
   direction   = "outbound"
   # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
@@ -303,43 +328,13 @@ resource "ibm_is_network_acl_rule" "outbound_acl_rules_subnet1" {
 }
 
 resource "ibm_is_network_acl_rule" "inbound_acl_rules_subnet1" {
-  for_each    = data.ibm_is_network_acl.existing_acls
-  network_acl = each.key
-  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "inbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "inbound"][0].id : null
-  name        = "inbound-cts-vpn-1"
+  for_each    = data.ibm_is_subnet.existing_subnets
+  network_acl = each.value.network_acl
+  before      = length(data.ibm_is_network_acl.existing_acls[each.value.network_acl].rules) > 0 && length([for r in data.ibm_is_network_acl.existing_acls[each.value.network_acl].rules : r if r.direction == "inbound"]) > 0 ? [for r in data.ibm_is_network_acl.existing_acls[each.value.network_acl].rules : r if r.direction == "inbound"][0].id : null
+  name        = "inbound-cts-vpn-${each.key}"
   action      = "allow"
   source      = var.client_ip_pool
-  destination = var.vpn_subnet_cidr_zone_1
-  direction   = "inbound"
-  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
-  lifecycle {
-    ignore_changes = [before]
-  }
-}
-
-resource "ibm_is_network_acl_rule" "outbound_acl_rules_subnet2" {
-  for_each    = data.ibm_is_network_acl.existing_acls
-  network_acl = each.key
-  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "outbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "outbound"][0].id : null
-  name        = "outbound-cts-vpn-2"
-  action      = "allow"
-  source      = var.vpn_subnet_cidr_zone_2
-  destination = var.client_ip_pool
-  direction   = "outbound"
-  # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
-  lifecycle {
-    ignore_changes = [before]
-  }
-}
-
-resource "ibm_is_network_acl_rule" "inbound_acl_rules_subnet2" {
-  for_each    = data.ibm_is_network_acl.existing_acls
-  network_acl = each.key
-  before      = length(each.value.rules) > 0 && length([for r in each.value.rules : r if r.direction == "inbound"]) > 0 ? [for r in each.value.rules : r if r.direction == "inbound"][0].id : null
-  name        = "inbound-cts-vpn-2"
-  action      = "allow"
-  source      = var.client_ip_pool
-  destination = var.vpn_subnet_cidr_zone_2
+  destination = each.value.ipv4_cidr_block
   direction   = "inbound"
   # Need to ignore the before value (See https://github.com/IBM-Cloud/terraform-provider-ibm/issues/4721#issuecomment-1658043342)
   lifecycle {
@@ -388,3 +383,19 @@ resource "ibm_is_security_group_target" "sg_target" {
   security_group = module.client_to_site_sg[0].security_group_id
   target         = local.target_ids[count.index]
 }
+
+# # Configure private cert engine if provisioning a new certificate
+# module "private_secret_engine" {
+#   source                    = "terraform-ibm-modules/secrets-manager-private-cert-engine/ibm"
+#   version                   = "1.3.2"
+#   secrets_manager_guid      = module.existing_sm_crn_parser.service_instance
+#   region                    = module.existing_sm_crn_parser.region
+#   root_ca_name              = "root-ca"
+#   root_ca_common_name       = "test.com"
+#   root_ca_max_ttl           = "8760h"
+#   intermediate_ca_name      = "intermediate-ca"
+#   certificate_template_name = "my-template"
+#   providers = {
+#     ibm = ibm.ibm-sm
+#   }
+# }

@@ -72,6 +72,7 @@ variable "vpn_client_access_acl_ids" {
   type        = list(string)
   description = "List of existing ACL rules to which VPN connection rules is added."
   default     = []
+  nullable    = false
 }
 
 ##############################################################################
