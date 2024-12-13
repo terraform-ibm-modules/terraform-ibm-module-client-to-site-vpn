@@ -383,19 +383,3 @@ resource "ibm_is_security_group_target" "sg_target" {
   security_group = module.client_to_site_sg[0].security_group_id
   target         = local.target_ids[count.index]
 }
-
-# # Configure private cert engine if provisioning a new certificate
-# module "private_secret_engine" {
-#   source                    = "terraform-ibm-modules/secrets-manager-private-cert-engine/ibm"
-#   version                   = "1.3.2"
-#   secrets_manager_guid      = module.existing_sm_crn_parser.service_instance
-#   region                    = module.existing_sm_crn_parser.region
-#   root_ca_name              = "root-ca"
-#   root_ca_common_name       = "test.com"
-#   root_ca_max_ttl           = "8760h"
-#   intermediate_ca_name      = "intermediate-ca"
-#   certificate_template_name = "my-template"
-#   providers = {
-#     ibm = ibm.ibm-sm
-#   }
-# }
