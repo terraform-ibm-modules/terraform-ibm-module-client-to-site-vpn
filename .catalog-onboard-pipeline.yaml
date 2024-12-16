@@ -9,10 +9,10 @@ offerings:
       - name: standard
         mark_ready: true
         install_type: fullstack
-        pre_validation: "tests/scripts/pre-validation-slz-vpc.sh"
+        pre_validation: "tests/scripts/pre-validation-slz-vpc.sh solutions/standard"
         post_validation: "tests/scripts/post-validation-slz-vpc.sh"
       - name: quickstart
         mark_ready: true
         install_type: fullstack
-        pre_validation: "tests/scripts/pre-validation-slz-vpc.sh"
+        pre_validation: "tests/scripts/pre-validation-slz-vpc.sh solutions/quickstart"
         post_validation: "tests/scripts/post-validation-slz-vpc.sh"
