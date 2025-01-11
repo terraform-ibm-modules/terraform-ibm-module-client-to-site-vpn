@@ -4,7 +4,7 @@
 
 module "landing_zone" {
   source                 = "terraform-ibm-modules/landing-zone/ibm//patterns//vpc//module"
-  version                = "6.2.2"
+  version                = "6.6.3"
   region                 = var.region
   prefix                 = var.prefix
   tags                   = var.resource_tags
@@ -33,7 +33,7 @@ locals {
 module "existing_sm_crn_parser" {
   count   = var.existing_secrets_manager_instance_crn != null ? 1 : 0
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.0.0"
+  version = "1.1.0"
   crn     = var.existing_secrets_manager_instance_crn
 }
 
@@ -55,7 +55,7 @@ module "secrets_manager_group" {
 module "secrets_manager_private_certificate" {
   count                  = var.existing_secrets_manager_instance_crn != null ? 1 : 0
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
-  version                = "1.3.1"
+  version                = "1.3.2"
   cert_name              = "${var.prefix}-cts-vpn-private-cert"
   cert_description       = "an example private cert"
   cert_template          = var.certificate_template_name

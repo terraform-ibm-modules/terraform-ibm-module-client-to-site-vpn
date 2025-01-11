@@ -18,7 +18,7 @@ locals {
 
 module "existing_sm_crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.0.0"
+  version = "1.1.0"
   crn     = var.existing_secrets_manager_instance_crn
 }
 
@@ -38,7 +38,7 @@ module "secrets_manager_secret_group" {
 # Create private certificate to use for VPN server
 module "secrets_manager_private_certificate" {
   source                 = "terraform-ibm-modules/secrets-manager-private-cert/ibm"
-  version                = "1.3.1"
+  version                = "1.3.2"
   cert_name              = (var.prefix != null && var.prefix != "") ? "${var.prefix}-cts-vpn-private-cert" : "cts-vpn-private-cert"
   cert_description       = "private certificate for client to site VPN connection"
   cert_template          = var.certificate_template_name
@@ -81,7 +81,7 @@ locals {
 
 module "existing_vpc_crn_parser" {
   source  = "terraform-ibm-modules/common-utilities/ibm//modules/crn-parser"
-  version = "1.0.0"
+  version = "1.1.0"
   crn     = var.existing_vpc_crn
 }
 
